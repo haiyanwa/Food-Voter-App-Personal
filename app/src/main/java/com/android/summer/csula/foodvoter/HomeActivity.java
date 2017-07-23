@@ -12,7 +12,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -96,9 +95,12 @@ public class HomeActivity extends AppCompatActivity {
                 if(connected) {
                     Drawable img = getResources().getDrawable(android.R.drawable.presence_online);
                     usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
+                    setUserOnlineStatusTo(true);
+
                 } else {
                     Drawable img = getResources().getDrawable(android.R.drawable.presence_offline);
                     usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
+                    setUserOnlineStatusTo(false);
                 }
             }
 
@@ -116,6 +118,7 @@ public class HomeActivity extends AppCompatActivity {
 
                 if (firebaseUser != null) {
                     onSignedInInitialized();
+                    setUserOnlineStatusTo(true);
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -249,6 +252,7 @@ public class HomeActivity extends AppCompatActivity {
 
         switch (selectedItemId) {
             case R.id.sign_out_menu:
+                setUserOnlineStatusTo(false);
                 AuthUI.getInstance().signOut(this);
                 return true;
             default:
@@ -258,6 +262,18 @@ public class HomeActivity extends AppCompatActivity {
 
     private String getSignedInUsername() {
         return firebaseAuth.getCurrentUser().getDisplayName();
+    }
+
+    private void setUserOnlineStatusTo(final boolean isOnline) {
+        usersDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                usersDatabaseReference.child(firebaseUser.getUid()).child("online").setValue(isOnline);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        });
     }
 }
 
