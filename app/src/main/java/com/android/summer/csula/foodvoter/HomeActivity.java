@@ -10,9 +10,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.summer.csula.foodvoter.models.User;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,7 +29,6 @@ import java.util.Arrays;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private static final String ANONYMOUS = "anonymous";
     private static final int REQUEST_CODE_SIGN_IN = 1;
     private static final String TAG = HomeActivity.class.getSimpleName();
 
@@ -36,37 +37,65 @@ public class HomeActivity extends AppCompatActivity {
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference usersDatabaseReference;
+    private DatabaseReference friendshipDatabaseReference;
     private ChildEventListener childEventListener;
 
     private FirebaseUser firebaseUser;
-    private FloatingActionButton addFriendButton;
 
     private TextView usernameTextView;
-
-    private String username;
-
+    private FloatingActionButton addFriendButton;
+    private Button  startPollBtn;
+    private Button  activePollBtn;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        username = ANONYMOUS;
-
-
-        usernameTextView = (TextView) findViewById(R.id.tv_username);
-
+        /* Setup firebase database */
         firebaseDatabase = FirebaseDatabase.getInstance();
         usersDatabaseReference = firebaseDatabase.getReference().child("users");
+        friendshipDatabaseReference = firebaseDatabase.getReference().child("friendship");
 
         firebaseAuth = FirebaseAuth.getInstance();
-        authStateListener = new FirebaseAuth.AuthStateListener() {
+        authStateListener = setupAuthStateListener();
+
+        /* Set up views*/
+        usernameTextView = (TextView) findViewById(R.id.tv_username);
+
+        addFriendButton = (FloatingActionButton) findViewById(R.id.btn_add_friend);
+        addFriendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        startPollBtn = (Button) findViewById(R.id.btn_start_poll);
+        startPollBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        activePollBtn = (Button) findViewById(R.id.btn_active_poll);
+        activePollBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+    }
+
+    private FirebaseAuth.AuthStateListener setupAuthStateListener() {
+        return new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
                 firebaseUser = firebaseAuth.getCurrentUser();
 
-                if (user != null) {
-                    onSignedInInitialized(user.getDisplayName());
+                if (firebaseUser != null) {
+                    onSignedInInitialized();
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -83,20 +112,10 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         };
-
-        addFriendButton = (FloatingActionButton) findViewById(R.id.btn_add_friend);
-        addFriendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-            }
-        });
-
     }
 
-    private void onSignedInInitialized(String username) {
-        this.username = username;
-        usernameTextView.setText(username);
+    private void onSignedInInitialized() {
+        usernameTextView.setText(firebaseUser.getDisplayName());
         addNewUserToDatabase();
         attachDatabaseReadListener();
     }
@@ -114,6 +133,8 @@ public class HomeActivity extends AppCompatActivity {
                             Log.d(TAG, "new user has log in; adding user to the database");
                             usersDatabaseReference.child(firebaseUser.getUid()).setValue(
                                     new User(firebaseUser.getDisplayName(), firebaseUser.getUid()));
+
+                            friendshipDatabaseReference.setValue(firebaseUser.getUid());
                         }
                     }
 
@@ -154,7 +175,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void onSignedOutCleanup() {
-        username = ANONYMOUS;
         usernameTextView.setText("");
         detachDatabaseReadListener();
     }
@@ -220,5 +240,4 @@ public class HomeActivity extends AppCompatActivity {
         return firebaseAuth.getCurrentUser().getDisplayName();
     }
 }
-
 

@@ -1,4 +1,4 @@
-package com.android.summer.csula.foodvoter;
+package com.android.summer.csula.foodvoter.models;
 
 public class User {
     private String username;
