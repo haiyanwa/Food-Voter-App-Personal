@@ -39,14 +39,17 @@ public class HomeActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference usersDatabaseReference;
     private DatabaseReference friendshipDatabaseReference;
+    private DatabaseReference connectedDatabaseReference;
+
     private ChildEventListener childEventListener;
+    private ValueEventListener connectedValueListener;
 
     private FirebaseUser firebaseUser;
 
     private TextView usernameTextView;
     private FloatingActionButton addFriendButton;
-    private Button  startPollBtn;
-    private Button  activePollBtn;
+    private Button startPollBtn;
+    private Button activePollBtn;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +57,7 @@ public class HomeActivity extends AppCompatActivity {
 
         /* Setup firebase database */
         firebaseDatabase = FirebaseDatabase.getInstance();
+        connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
         usersDatabaseReference = firebaseDatabase.getReference().child("users");
         friendshipDatabaseReference = firebaseDatabase.getReference().child("friendship");
 
@@ -87,27 +91,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-        connectedRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean connected = dataSnapshot.getValue(Boolean.class);
-                if(connected) {
-                    Drawable img = getResources().getDrawable(android.R.drawable.presence_online);
-                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
-                    setUserOnlineStatusTo(true);
-
-                } else {
-                    Drawable img = getResources().getDrawable(android.R.drawable.presence_offline);
-                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
-                    setUserOnlineStatusTo(false);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
     }
 
     private FirebaseAuth.AuthStateListener setupAuthStateListener() {
@@ -141,6 +124,7 @@ public class HomeActivity extends AppCompatActivity {
         usernameTextView.setText(firebaseUser.getDisplayName());
         addNewUserToDatabase();
         attachDatabaseReadListener();
+        attachConnectedValueListener();
     }
 
     private void addNewUserToDatabase() {
@@ -195,6 +179,30 @@ public class HomeActivity extends AppCompatActivity {
             };
             usersDatabaseReference.addChildEventListener(childEventListener);
         }
+    }
+
+    private void attachConnectedValueListener() {
+        connectedValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean connected = dataSnapshot.getValue(Boolean.class);
+                if (connected) {
+                    Drawable img = getResources().getDrawable(android.R.drawable.presence_online);
+                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
+                    setUserOnlineStatusTo(true);
+
+                } else {
+                    Drawable img = getResources().getDrawable(android.R.drawable.presence_offline);
+                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
+                    setUserOnlineStatusTo(false);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        };
+        connectedDatabaseReference.addValueEventListener(connectedValueListener);
     }
 
     private void onSignedOutCleanup() {
