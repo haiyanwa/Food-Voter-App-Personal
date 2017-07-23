@@ -3,4 +3,5 @@
     <string name="sign_out">Sign Out</string>
   <string name="btn_start_poll">Start A Poll</string>
   <string name="btn_active_poll">Active Poll</string>
+  <string name="tv_friends_list">Friends List</string>
 </resources>
