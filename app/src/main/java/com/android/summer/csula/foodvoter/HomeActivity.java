@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,7 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.summer.csula.foodvoter.models.User;
+import com.android.summer.csula.foodvoter.database.UserDatabase;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,15 +29,16 @@ import java.util.Arrays;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private static final int REQUEST_CODE_SIGN_IN = 1;
+
     private static final String TAG = HomeActivity.class.getSimpleName();
+    private static final int REQUEST_CODE_SIGN_IN = 1;
+    private static final boolean ONLINE = true;
+    private static final boolean OFFLINE = false;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
 
     private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference usersDatabaseReference;
-    private DatabaseReference friendshipDatabaseReference;
     private DatabaseReference connectedDatabaseReference;
 
     private ChildEventListener childEventListener;
@@ -51,6 +51,8 @@ public class HomeActivity extends AppCompatActivity {
     private Button startPollBtn;
     private Button activePollBtn;
 
+    private UserDatabase userDatabase;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
@@ -58,8 +60,7 @@ public class HomeActivity extends AppCompatActivity {
         /* Setup firebase database */
         firebaseDatabase = FirebaseDatabase.getInstance();
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
-        usersDatabaseReference = firebaseDatabase.getReference().child("users");
-        friendshipDatabaseReference = firebaseDatabase.getReference().child("friendship");
+        userDatabase = UserDatabase.get();
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = setupAuthStateListener();
@@ -71,7 +72,8 @@ public class HomeActivity extends AppCompatActivity {
         addFriendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intentAddFriendsActivity = FriendSearchActivity.newIntent(HomeActivity.this);
+                startActivity(intentAddFriendsActivity);
             }
         });
 
@@ -79,7 +81,6 @@ public class HomeActivity extends AppCompatActivity {
         startPollBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
             }
         });
 
@@ -101,7 +102,7 @@ public class HomeActivity extends AppCompatActivity {
 
                 if (firebaseUser != null) {
                     onSignedInInitialized();
-                    setUserOnlineStatusTo(true);
+                    setUserOnlineStatusTo(ONLINE);
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -128,57 +129,11 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void addNewUserToDatabase() {
-        usersDatabaseReference.addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.d(TAG, "Current user id: " + firebaseUser.getUid());
-
-                        if (dataSnapshot.hasChild(firebaseUser.getUid())) {
-                            Log.d(TAG, "existing user has log in");
-                        } else {
-                            Log.d(TAG, "new user has log in; adding user to the database");
-                            usersDatabaseReference.child(firebaseUser.getUid()).setValue(
-                                    new User(firebaseUser.getDisplayName(), firebaseUser.getUid()));
-
-                            friendshipDatabaseReference.setValue(firebaseUser.getUid());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+        userDatabase.addNewUserToDatabase(firebaseUser);
     }
 
     private void attachDatabaseReadListener() {
-        if (childEventListener == null) {
-            childEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    User user = dataSnapshot.getValue(User.class);
-                    Log.d(TAG, "name: " + user.getUsername() + ", Id: " + user.getId());
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            };
-            usersDatabaseReference.addChildEventListener(childEventListener);
-        }
+        userDatabase.attachReadListener();
     }
 
     private void attachConnectedValueListener() {
@@ -189,12 +144,12 @@ public class HomeActivity extends AppCompatActivity {
                 if (connected) {
                     Drawable img = getResources().getDrawable(android.R.drawable.presence_online);
                     usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
-                    setUserOnlineStatusTo(true);
+                    setUserOnlineStatusTo(ONLINE);
 
                 } else {
                     Drawable img = getResources().getDrawable(android.R.drawable.presence_offline);
                     usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
-                    setUserOnlineStatusTo(false);
+                    setUserOnlineStatusTo(OFFLINE);
                 }
             }
 
@@ -211,10 +166,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void detachDatabaseReadListener() {
-        if (childEventListener != null) {
-            usersDatabaseReference.removeEventListener(childEventListener);
-            childEventListener = null;
-        }
+        userDatabase.detachReadListener();
     }
 
     @Override
@@ -260,7 +212,7 @@ public class HomeActivity extends AppCompatActivity {
 
         switch (selectedItemId) {
             case R.id.sign_out_menu:
-                setUserOnlineStatusTo(false);
+                setUserOnlineStatusTo(OFFLINE);
                 AuthUI.getInstance().signOut(this);
                 return true;
             default:
@@ -273,15 +225,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setUserOnlineStatusTo(final boolean isOnline) {
-        usersDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                usersDatabaseReference.child(firebaseUser.getUid()).child("online").setValue(isOnline);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
+        userDatabase.setUserOnlineStatus(firebaseUser, isOnline);
     }
 }
 
