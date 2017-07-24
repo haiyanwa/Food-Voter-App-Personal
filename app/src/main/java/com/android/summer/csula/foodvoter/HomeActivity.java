@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,7 +32,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 
-public class HomeActivity extends AppCompatActivity implements FriendshipDatabase.OnGetDataListener {
+public class HomeActivity extends AppCompatActivity implements
+    FriendshipDatabase.OnGetDataListener, UserDatabase.UserDatabaseListener {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
     private static final int REQUEST_CODE_SIGN_IN = 1;
@@ -66,15 +68,9 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
         /* Setup firebase database */
         firebaseDatabase = FirebaseDatabase.getInstance();
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
-        userDatabase = new UserDatabase(new UserDatabase.UserDatabaseListener() {
+        userDatabase = new UserDatabase(this);
             // Left intentionally blank
-            // TODO: probably should create another constructor that doesn't need to implement interface
-            @Override
-            public void onUserAdded(User user) { }
 
-            @Override
-            public void onUserChanged(User user) { }
-        });
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = setupAuthStateListener();
@@ -258,6 +254,15 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
     @Override
     public void onFriendAdded(User friend) {
         friendsAdapter.addFriend(friend);
+    }
+
+    @Override
+    public void onUserAdded(User user) { } // Left intentionally blank
+
+    @Override
+    public void onUserChanged(User user) {
+        Log.d(TAG, "onUserChanged: " + user.toString());
+        friendsAdapter.updateFriend(user);
     }
 }
 
