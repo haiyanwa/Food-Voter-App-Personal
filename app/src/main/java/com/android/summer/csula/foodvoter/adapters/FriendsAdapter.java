@@ -42,7 +42,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.bind(position);
+        holder.bind(holder, position);
     }
 
     @Override
@@ -81,6 +81,12 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         notifyDataSetChanged();
     }
 
+    public void removeFriend(User friend) {
+        boolean removalResult = friends.remove(friend);
+        Log.d(TAG, "Removal result: " + (removalResult));
+        notifyDataSetChanged();
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView friendUsernameTextView;
@@ -105,7 +111,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             });
         }
 
-        public void bind(int position) {
+        public void bind(ViewHolder holder, int position) {
             User friend = friends.get(position);
             friendUsernameTextView.setText(friend.getUsername());
 
@@ -114,6 +120,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             } else {
                 friendPresenceImageView.setImageResource(android.R.drawable.presence_offline);
             }
+
+            holder.itemView.setTag(friend);
         }
     }
 

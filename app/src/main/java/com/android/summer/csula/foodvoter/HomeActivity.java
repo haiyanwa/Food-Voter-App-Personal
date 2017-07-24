@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -87,6 +88,23 @@ public class HomeActivity extends AppCompatActivity implements
         recyclerView = (RecyclerView) findViewById(R.id.rv_friend_list);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(friendsAdapter);
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                User friend  = (User) viewHolder.itemView.getTag();
+                Log.d(TAG, "swipe friend: " + friend.toString());
+                friendshipDatabase.unfriendUser(firebaseUser.getUid(), friend);
+                friendsAdapter.removeFriend(friend);
+
+            }
+        }).attachToRecyclerView(recyclerView);
 
         usernameTextView = (TextView) findViewById(R.id.tv_username);
 
