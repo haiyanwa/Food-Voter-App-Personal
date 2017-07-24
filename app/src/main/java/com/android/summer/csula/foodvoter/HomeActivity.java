@@ -93,7 +93,9 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
         startPollBtn = (Button) findViewById(R.id.btn_start_poll);
         startPollBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) { }
+            public void onClick(View view) {
+                Toast.makeText(HomeActivity.this, "This feature is not implemented yet!", Toast.LENGTH_SHORT).show();
+            }
         });
 
         activePollBtn = (Button) findViewById(R.id.btn_active_poll);
