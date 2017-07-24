@@ -2,11 +2,13 @@ package com.android.summer.csula.foodvoter.adapters;
 
 
 import android.content.Context;
+import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.android.summer.csula.foodvoter.R;
@@ -21,9 +23,11 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
 
     public UserDatabase userDatabase = UserDatabase.get();
     public List<User> users;
+    public UserOnClickHandler userOnClickHandler;
 
-    public UsersAdapter() {
+    public UsersAdapter(UserOnClickHandler userOnClickHandler) {
         users = userDatabase.getUsers();
+        this.userOnClickHandler = userOnClickHandler;
     }
 
     @Override
@@ -49,13 +53,26 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
     }
 
 
+    public interface UserOnClickHandler {
+        void onImageButtonClick(User clickedUser);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView usernameTextView;
+        private ImageButton addUserToFriendButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
             usernameTextView = (TextView) itemView.findViewById(R.id.tv_username);
+            addUserToFriendButton = (ImageButton) itemView.findViewById(R.id.btn_user_to_friend);
+            addUserToFriendButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    User clickedUser = users.get(getAdapterPosition());
+                    userOnClickHandler.onImageButtonClick(clickedUser);
+                }
+            });
         }
 
         public void bind(int position) {
