@@ -29,7 +29,7 @@ public class UserDatabase {
 
     private ChildEventListener childEventListener;
 
-    private Set<User> users;
+    private List<User> users;
 
     public static UserDatabase get() {
         if (userDatabase == null) {
@@ -42,11 +42,11 @@ public class UserDatabase {
     private UserDatabase() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         usersRef = database.getReference().child(USERS);
-        users = new HashSet<>();
+        users = new ArrayList<>();
     }
 
     public List<User> getUsers() {
-        return new ArrayList<>(users);
+        return users;
     }
 
     public void attachReadListener() {
@@ -58,8 +58,9 @@ public class UserDatabase {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     User user = dataSnapshot.getValue(User.class);
 
-                    if (user != null) {
+                    if (user != null && !users.contains(user)) {
                         Log.d(TAG, "user added: " + user.toString());
+                        Log.d(TAG, "user size: " + users.size());
                         users.add(user);
                     }
                 }

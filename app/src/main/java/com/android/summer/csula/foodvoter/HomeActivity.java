@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,6 +15,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.summer.csula.foodvoter.database.FriendshipDatabase;
 import com.android.summer.csula.foodvoter.database.UserDatabase;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,6 +28,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -41,7 +44,6 @@ public class HomeActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference connectedDatabaseReference;
 
-    private ChildEventListener childEventListener;
     private ValueEventListener connectedValueListener;
 
     private FirebaseUser firebaseUser;
@@ -72,7 +74,8 @@ public class HomeActivity extends AppCompatActivity {
         addFriendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intentAddFriendsActivity = FriendSearchActivity.newIntent(HomeActivity.this);
+                Intent intentAddFriendsActivity = AddFriendshipActivity
+                        .newIntent( HomeActivity.this, firebaseUser.getUid());
                 startActivity(intentAddFriendsActivity);
             }
         });
