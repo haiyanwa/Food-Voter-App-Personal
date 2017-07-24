@@ -77,7 +77,13 @@ public class HomeActivity extends AppCompatActivity implements
 
         /* Set up views*/
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        friendsAdapter = new FriendsAdapter();
+        friendsAdapter = new FriendsAdapter(new FriendsAdapter.FriendsAdapterListener() {
+            @Override
+            public void unfriend(User user) {
+                friendshipDatabase.unfriendUser(firebaseUser.getUid(), user);
+            }
+        });
+
         recyclerView = (RecyclerView) findViewById(R.id.rv_friend_list);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(friendsAdapter);

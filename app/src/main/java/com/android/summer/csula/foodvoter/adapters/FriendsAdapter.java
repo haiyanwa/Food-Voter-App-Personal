@@ -3,9 +3,11 @@ package com.android.summer.csula.foodvoter.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,7 +19,14 @@ import java.util.List;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
 
+    private static final String TAG =  FriendsAdapter.class.getSimpleName();
+
     private List<User> friends = new ArrayList<>();
+    private FriendsAdapterListener listener;
+
+    public FriendsAdapter(FriendsAdapterListener listener) {
+        this.listener = listener;
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -67,15 +76,33 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         }
     }
 
+    public void removeFriend(int position) {
+        friends.remove(position);
+        notifyDataSetChanged();
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView friendUsernameTextView;
         private ImageView friendPresenceImageView;
+        private ImageButton unfriendButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
             friendUsernameTextView = (TextView) itemView.findViewById(R.id.tv_friend_username);
             friendPresenceImageView = (ImageView) itemView.findViewById(R.id.iv_friend_presence);
+            unfriendButton = (ImageButton) itemView.findViewById(R.id.btn_un_friend);
+            unfriendButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int index = getAdapterPosition();
+                    User friend = friends.get(index);
+                    Log.d(TAG, "unfriend: " + friend.toString());
+
+                    listener.unfriend(friend);
+                    removeFriend(index);
+                }
+            });
         }
 
         public void bind(int position) {
@@ -88,5 +115,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 friendPresenceImageView.setImageResource(android.R.drawable.presence_offline);
             }
         }
+    }
+
+    public interface FriendsAdapterListener {
+       void unfriend(User user);
     }
 }

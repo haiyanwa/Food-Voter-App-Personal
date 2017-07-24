@@ -80,6 +80,18 @@ public class FriendshipDatabase {
         });
     }
 
+    public void unfriendUser(final String hostId, final User friend) {
+       friendshipReference.addListenerForSingleValueEvent(new ValueEventListener() {
+           @Override
+           public void onDataChange(DataSnapshot dataSnapshot) {
+                friendshipReference.child(friend.getId()).removeValue();
+           }
+
+           @Override
+           public void onCancelled(DatabaseError databaseError) { }
+       });
+    }
+
     public interface OnGetDataListener {
         void onFriendAdded(User friend);
     }
