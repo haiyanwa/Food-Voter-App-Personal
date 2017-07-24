@@ -12,11 +12,11 @@ import android.widget.Toast;
 import com.android.summer.csula.foodvoter.adapters.UsersAdapter;
 import com.android.summer.csula.foodvoter.database.FriendshipDatabase;
 import com.android.summer.csula.foodvoter.database.UserDatabase;
+import com.android.summer.csula.foodvoter.models.FriendList;
 import com.android.summer.csula.foodvoter.models.User;
 
-import java.util.List;
 
-public class AddFriendshipActivity extends AppCompatActivity implements UsersAdapter.UserOnClickHandler {
+public class AddFriendshipActivity extends AppCompatActivity implements UsersAdapter.UserOnClickHandler, FriendshipDatabase.OnGetDataListener {
 
     private static final String TAG = AddFriendshipActivity.class.getSimpleName();
     private static final String EXTRA_ID = "userId";
@@ -42,7 +42,7 @@ public class AddFriendshipActivity extends AppCompatActivity implements UsersAda
         setContentView(R.layout.activity_add_friendship);
 
         userDatabase = UserDatabase.get();
-        friendshipDatabase = FriendshipDatabase.get();
+        friendshipDatabase = FriendshipDatabase.get(this);
 
         Intent intent = getIntent();
         userId = intent.getStringExtra(EXTRA_ID);
@@ -62,4 +62,7 @@ public class AddFriendshipActivity extends AppCompatActivity implements UsersAda
         Toast.makeText(this, clickedUser.getUsername() + " added to your friend list!",
                 Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public void onChildAdded(FriendList friendList) { }
 }

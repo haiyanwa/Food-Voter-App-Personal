@@ -3,97 +3,83 @@ package com.android.summer.csula.foodvoter.database;
 
 import android.util.Log;
 
+import com.android.summer.csula.foodvoter.models.FriendList;
 import com.android.summer.csula.foodvoter.models.User;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class FriendshipDatabase {
 
+    public interface OnGetDataListener {
+        void onChildAdded(FriendList friendList );
+    }
+
+    private static OnGetDataListener onGetDataListener;
     private static final String FRIENDSHIP_CHILD = "friendship";
     private static final String TAG = FriendshipDatabase.class.getSimpleName();
     private static FriendshipDatabase friendshipDatabase;
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference friendshipReference;
-    private Map<String, List<User>> friendshipMap;
+    private ChildEventListener childEventListener;
 
 
-    public static FriendshipDatabase get() {
+    public static FriendshipDatabase get(OnGetDataListener onGetDataListener) {
         if (friendshipDatabase == null) {
             friendshipDatabase = new FriendshipDatabase();
         }
 
+        FriendshipDatabase.onGetDataListener = onGetDataListener;
         return friendshipDatabase;
     }
 
     public FriendshipDatabase() {
         firebaseDatabase = FirebaseDatabase.getInstance();
         friendshipReference = firebaseDatabase.getReference().child(FRIENDSHIP_CHILD);
-        friendshipMap = new HashMap<>();
     }
 
-    public void addNewUserToDatabase(final FirebaseUser firebaseUser) {
-        friendshipReference.addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.d(TAG, "Current user id: " + firebaseUser.getUid());
-                        if (dataSnapshot.hasChild(firebaseUser.getUid())) {
-                            Log.d(TAG, "user already exist in friendship database");
-                        } else {
-                            Log.d(TAG, "adding user to the friendship database");
-                            friendshipReference.child(firebaseUser.getUid()).setValue(false);
-                        }
+
+    public void attachReadListener() {
+        if (childEventListener == null) {
+            childEventListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    Log.d(TAG, "Friend child added");
+                    FriendList friendList = new FriendList(dataSnapshot.getKey());
+
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        User u = child.getValue(User.class);
+                        friendList.addFriend(u);
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-    }
-
-    public void readFriendship() {
-        friendshipReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, dataSnapshot.getChildrenCount() + "");
-
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    Log.d(TAG, ds.getKey());
-
-                    if (!friendshipMap.containsKey(ds.getKey())) {
-                        friendshipMap.put(ds.getKey(), new ArrayList<User>());
-
-                    }
-
-                    if (ds.hasChildren()) {
-                        for (DataSnapshot child: ds.getChildren()) {
-                            User user = child.getValue(User.class);
-                            friendshipMap.get(ds.getKey()).add(user);
-                        }
-                    }
-
+                    onGetDataListener.onChildAdded(friendList);
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) { }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) { }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) { }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) { }
+            };
+            friendshipReference.addChildEventListener(childEventListener);
+        }
     }
 
-
-    public List<User> getFriends(FirebaseUser firebaseUser) {
-        return friendshipMap.get(firebaseUser.getUid());
+    public void detachReadListener() {
+        if (childEventListener != null) {
+            friendshipReference.removeEventListener(childEventListener);
+            childEventListener = null;
+        }
     }
 
     public void befriendUser(final String hostId, final User friend) {
@@ -106,8 +92,7 @@ public class FriendshipDatabase {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
+            public void onCancelled(DatabaseError databaseError) { }
         });
     }
 }

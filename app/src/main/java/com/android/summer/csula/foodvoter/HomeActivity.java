@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,23 +17,25 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.summer.csula.foodvoter.adapters.FriendsAdapter;
 import com.android.summer.csula.foodvoter.database.FriendshipDatabase;
 import com.android.summer.csula.foodvoter.database.UserDatabase;
+import com.android.summer.csula.foodvoter.models.FriendList;
+import com.android.summer.csula.foodvoter.models.User;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class HomeActivity extends AppCompatActivity {
-
+public class HomeActivity extends AppCompatActivity implements FriendshipDatabase.OnGetDataListener {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
     private static final int REQUEST_CODE_SIGN_IN = 1;
@@ -52,8 +56,14 @@ public class HomeActivity extends AppCompatActivity {
     private FloatingActionButton addFriendButton;
     private Button startPollBtn;
     private Button activePollBtn;
+    private RecyclerView recyclerView;
+    private FriendsAdapter friendsAdapter;
 
     private UserDatabase userDatabase;
+    private FriendshipDatabase friendshipDatabase;
+
+
+    private List<User> friendList = new ArrayList<>();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,11 +73,18 @@ public class HomeActivity extends AppCompatActivity {
         firebaseDatabase = FirebaseDatabase.getInstance();
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
         userDatabase = UserDatabase.get();
+        friendshipDatabase = FriendshipDatabase.get(this);
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = setupAuthStateListener();
 
         /* Set up views*/
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        friendsAdapter = new FriendsAdapter();
+        recyclerView = (RecyclerView) findViewById(R.id.rv_friend_list);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(friendsAdapter);
+
         usernameTextView = (TextView) findViewById(R.id.tv_username);
 
         addFriendButton = (FloatingActionButton) findViewById(R.id.btn_add_friend);
@@ -75,7 +92,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intentAddFriendsActivity = AddFriendshipActivity
-                        .newIntent( HomeActivity.this, firebaseUser.getUid());
+                        .newIntent(HomeActivity.this, firebaseUser.getUid());
                 startActivity(intentAddFriendsActivity);
             }
         });
@@ -83,16 +100,13 @@ public class HomeActivity extends AppCompatActivity {
         startPollBtn = (Button) findViewById(R.id.btn_start_poll);
         startPollBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-            }
+            public void onClick(View view) { }
         });
 
         activePollBtn = (Button) findViewById(R.id.btn_active_poll);
         activePollBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-
-            }
+            public void onClick(View view) { }
         });
 
     }
@@ -113,11 +127,10 @@ public class HomeActivity extends AppCompatActivity {
                                     .createSignInIntentBuilder()
                                     .setIsSmartLockEnabled(false)
                                     .setAvailableProviders(
-                                            Arrays.asList(new AuthUI.IdpConfig.Builder(
-                                                            AuthUI.EMAIL_PROVIDER).build(),
-                                                    new AuthUI.IdpConfig.Builder(
-                                                            AuthUI.GOOGLE_PROVIDER).build()))
-                                    .build(),
+                                            Arrays.asList(
+                                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
+                                    ).build(),
                             REQUEST_CODE_SIGN_IN);
                 }
             }
@@ -137,6 +150,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void attachDatabaseReadListener() {
         userDatabase.attachReadListener();
+        friendshipDatabase.attachReadListener();
     }
 
     private void attachConnectedValueListener() {
@@ -170,6 +184,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void detachDatabaseReadListener() {
         userDatabase.detachReadListener();
+        friendshipDatabase.detachReadListener();
     }
 
     @Override
@@ -185,6 +200,7 @@ public class HomeActivity extends AppCompatActivity {
         if (authStateListener != null) {
             firebaseAuth.removeAuthStateListener(authStateListener);
         }
+        friendsAdapter.clear();
         detachDatabaseReadListener();
     }
 
@@ -217,6 +233,7 @@ public class HomeActivity extends AppCompatActivity {
             case R.id.sign_out_menu:
                 setUserOnlineStatusTo(OFFLINE);
                 AuthUI.getInstance().signOut(this);
+                friendsAdapter.clear();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -229,6 +246,15 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setUserOnlineStatusTo(final boolean isOnline) {
         userDatabase.setUserOnlineStatus(firebaseUser, isOnline);
+    }
+
+    @Override
+    public void onChildAdded(FriendList friendList) {
+        if (friendList.getHostId().equals(firebaseUser.getUid())) {
+            this.friendList = friendList.getFriends();
+            Log.d(TAG, "my friends count: ..." + friendList.getFriends().size());
+            friendsAdapter.setFriends(friendList.getFriends());
+        }
     }
 }
 
