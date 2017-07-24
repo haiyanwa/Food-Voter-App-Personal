@@ -12,87 +12,51 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 public class UserDatabase {
 
-    private static UserDatabase userDatabase;
+    private static final String TAG = UserDatabase.class.getSimpleName();
     private static final String USERS = "users";
     private static final String ONLINE_KEY = "online";
 
-    private static final String TAG = UserDatabase.class.getSimpleName();
-
     private DatabaseReference usersRef;
-
     private ChildEventListener childEventListener;
 
-    private List<User> users;
+    private UserDatabaseListener listener;
 
-    public static UserDatabase get() {
-        if (userDatabase == null) {
-            userDatabase = new UserDatabase();
-        }
 
-        return userDatabase;
-    }
+    public UserDatabase(UserDatabaseListener listener) {
+        this.listener = listener;
 
-    private UserDatabase() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         usersRef = database.getReference().child(USERS);
-        users = new ArrayList<>();
-    }
-
-    public List<User> getUsers() {
-        return users;
     }
 
     public void attachReadListener() {
         if (childEventListener == null) {
-            users.clear();
 
             childEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     User user = dataSnapshot.getValue(User.class);
-
-                    if (user != null && !users.contains(user)) {
-                        Log.d(TAG, "user added: " + user.toString());
-                        Log.d(TAG, "user size: " + users.size());
-                        users.add(user);
-                    }
+                    Log.d(TAG, "onUserAdded: " + user.toString());
+                    listener.onUserAdded(user);
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                     User user = dataSnapshot.getValue(User.class);
-
-                    if (user != null) {
-                        Log.d(TAG, "user changed: " + user.toString());
-
-                        // Update the user (set)  when the value change
-                        for (User u : users) {
-                            if (u.equals(user)) {
-                                u.setOnline(user.isOnline());
-                            }
-                            Log.d(TAG, u.toString());
-                        }
-                    }
+                    Log.d(TAG, "onChildChanged: " + user.toString());
+                    listener.onUserChanged(user);
                 }
 
                 @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
+                public void onChildRemoved(DataSnapshot dataSnapshot) { }
 
                 @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) { }
 
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
+                public void onCancelled(DatabaseError databaseError) { }
             };
             usersRef.addChildEventListener(childEventListener);
         }
@@ -141,4 +105,9 @@ public class UserDatabase {
         });
     }
 
+    public interface UserDatabaseListener {
+        void onUserAdded(User user);
+
+        void onUserChanged(User user);
+    }
 }

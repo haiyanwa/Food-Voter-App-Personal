@@ -15,8 +15,13 @@ import com.android.summer.csula.foodvoter.database.UserDatabase;
 import com.android.summer.csula.foodvoter.models.FriendList;
 import com.android.summer.csula.foodvoter.models.User;
 
+import java.util.List;
 
-public class AddFriendshipActivity extends AppCompatActivity implements UsersAdapter.UserOnClickHandler, FriendshipDatabase.OnGetDataListener {
+
+public class AddFriendshipActivity extends AppCompatActivity implements
+    UsersAdapter.UserOnClickHandler,
+    FriendshipDatabase.OnGetDataListener,
+    UserDatabase.UserDatabaseListener {
 
     private static final String TAG = AddFriendshipActivity.class.getSimpleName();
     private static final String EXTRA_ID = "userId";
@@ -44,7 +49,7 @@ public class AddFriendshipActivity extends AppCompatActivity implements UsersAda
         Intent intent = getIntent();
         userId = intent.getStringExtra(EXTRA_ID);
 
-        userDatabase = UserDatabase.get();
+        userDatabase = new UserDatabase(this);
         friendshipDatabase = new FriendshipDatabase(this, userId);
 
         userRecyclerView = (RecyclerView) findViewById(R.id.rv_all_users);
@@ -64,11 +69,29 @@ public class AddFriendshipActivity extends AppCompatActivity implements UsersAda
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        friendshipDatabase.detachReadListener();
+    protected void onResume() {
+        super.onResume();
+        userDatabase.attachReadListener();
     }
 
     @Override
-    public void onChildAdded(User friend) { }
+    protected void onPause() {
+        super.onPause();
+        userDatabase.detachReadListener();
+    }
+
+    @Override
+    public void onFriendAdded(User friend) { }
+
+    @Override
+    public void onUserAdded(User user) {
+        Log.d(TAG, "user added: " + user.toString());
+        usersAdapter.add(user);
+    }
+
+    @Override
+    public void onUserChanged(User user) {
+        Log.d(TAG, "user changed: " + user.toString());
+        usersAdapter.update(user);
+    }
 }

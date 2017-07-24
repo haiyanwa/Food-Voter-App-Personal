@@ -66,7 +66,15 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
         /* Setup firebase database */
         firebaseDatabase = FirebaseDatabase.getInstance();
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
-        userDatabase = UserDatabase.get();
+        userDatabase = new UserDatabase(new UserDatabase.UserDatabaseListener() {
+            // Left intentionally blank
+            // TODO: probably should create another constructor that doesn't need to implement interface
+            @Override
+            public void onUserAdded(User user) { }
+
+            @Override
+            public void onUserChanged(User user) { }
+        });
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = setupAuthStateListener();
@@ -248,7 +256,7 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
     }
 
     @Override
-    public void onChildAdded(User friend) {
+    public void onFriendAdded(User friend) {
         friendsAdapter.addFriend(friend);
     }
 }

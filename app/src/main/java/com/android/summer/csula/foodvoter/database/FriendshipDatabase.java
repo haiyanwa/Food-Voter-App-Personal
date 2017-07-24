@@ -3,7 +3,6 @@ package com.android.summer.csula.foodvoter.database;
 
 import android.util.Log;
 
-import com.android.summer.csula.foodvoter.models.FriendList;
 import com.android.summer.csula.foodvoter.models.User;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -13,10 +12,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class FriendshipDatabase {
-
-    public interface OnGetDataListener {
-        void onChildAdded(User friend);
-    }
 
     private static OnGetDataListener onGetDataListener;
     private static final String FRIENDSHIP_CHILD = "friendship";
@@ -45,7 +40,7 @@ public class FriendshipDatabase {
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     User user = dataSnapshot.getValue(User.class);
                     Log.d(TAG, "Friend child added: " + user.toString());
-                    onGetDataListener.onChildAdded(user);
+                    onGetDataListener.onFriendAdded(user);
                 }
 
                 @Override
@@ -83,6 +78,10 @@ public class FriendshipDatabase {
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
+    }
+
+    public interface OnGetDataListener {
+        void onFriendAdded(User friend);
     }
 }
 

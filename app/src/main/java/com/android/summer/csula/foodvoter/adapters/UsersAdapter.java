@@ -2,31 +2,29 @@ package com.android.summer.csula.foodvoter.adapters;
 
 
 import android.content.Context;
-import android.media.Image;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.summer.csula.foodvoter.R;
-import com.android.summer.csula.foodvoter.database.UserDatabase;
 import com.android.summer.csula.foodvoter.models.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> {
 
     private static final String TAG = UsersAdapter.class.getSimpleName();
 
-    public UserDatabase userDatabase = UserDatabase.get();
-    public List<User> users;
-    public UserOnClickHandler userOnClickHandler;
+    private List<User> users = new ArrayList<>();
+    private UserOnClickHandler userOnClickHandler;
 
     public UsersAdapter(UserOnClickHandler userOnClickHandler) {
-        users = userDatabase.getUsers();
         this.userOnClickHandler = userOnClickHandler;
     }
 
@@ -52,7 +50,27 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
         return users.size();
     }
 
+    public void add(User user) {
+        users.add(user);
+        notifyDataSetChanged();
+    }
 
+    public void clear() {
+        users.clear();
+        notifyDataSetChanged();
+    }
+
+    /* Update is use primarily to update the online status of the users.
+    * It is the only field that can change */
+    public void update(User user) {
+        for (User entry : users) {
+            if (entry.equals(user)) {
+                entry.setOnline(user.isOnline());
+                notifyDataSetChanged();
+                break;
+            }
+        }
+    }
     public interface UserOnClickHandler {
         void onImageButtonClick(User clickedUser);
     }
@@ -61,10 +79,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
 
         private TextView usernameTextView;
         private ImageButton addUserToFriendButton;
+        private ImageView userPresenceImageView;
 
         public ViewHolder(View itemView) {
             super(itemView);
             usernameTextView = (TextView) itemView.findViewById(R.id.tv_username);
+            userPresenceImageView = (ImageView) itemView.findViewById(R.id.iv_user_presence);
             addUserToFriendButton = (ImageButton) itemView.findViewById(R.id.btn_user_to_friend);
             addUserToFriendButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -78,7 +98,14 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
         public void bind(int position) {
             User user = users.get(position);
             Log.d(TAG, "binding user: " + user.toString());
+
             usernameTextView.setText(user.getUsername());
+
+            if (user.isOnline()) {
+                userPresenceImageView.setImageResource(android.R.drawable.presence_online);
+            } else {
+                userPresenceImageView.setImageResource(android.R.drawable.presence_offline);
+            }
         }
     }
 }
