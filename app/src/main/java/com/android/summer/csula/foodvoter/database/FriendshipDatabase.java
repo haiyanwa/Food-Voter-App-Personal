@@ -15,31 +15,26 @@ import com.google.firebase.database.ValueEventListener;
 public class FriendshipDatabase {
 
     public interface OnGetDataListener {
-        void onChildAdded(FriendList friendList );
+        void onChildAdded(User friend);
     }
 
     private static OnGetDataListener onGetDataListener;
     private static final String FRIENDSHIP_CHILD = "friendship";
     private static final String TAG = FriendshipDatabase.class.getSimpleName();
-    private static FriendshipDatabase friendshipDatabase;
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference friendshipReference;
     private ChildEventListener childEventListener;
 
+    private String userId;
 
-    public static FriendshipDatabase get(OnGetDataListener onGetDataListener) {
-        if (friendshipDatabase == null) {
-            friendshipDatabase = new FriendshipDatabase();
-        }
 
-        FriendshipDatabase.onGetDataListener = onGetDataListener;
-        return friendshipDatabase;
-    }
+    public FriendshipDatabase(OnGetDataListener onGetDataListener, String userId) {
+        this.onGetDataListener = onGetDataListener;
+        this.userId = userId;
 
-    public FriendshipDatabase() {
         firebaseDatabase = FirebaseDatabase.getInstance();
-        friendshipReference = firebaseDatabase.getReference().child(FRIENDSHIP_CHILD);
+        friendshipReference = firebaseDatabase.getReference().child(FRIENDSHIP_CHILD).child(userId);
     }
 
 
@@ -48,15 +43,9 @@ public class FriendshipDatabase {
             childEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    Log.d(TAG, "Friend child added");
-                    FriendList friendList = new FriendList(dataSnapshot.getKey());
-
-                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        User u = child.getValue(User.class);
-                        friendList.addFriend(u);
-                    }
-
-                    onGetDataListener.onChildAdded(friendList);
+                    User user = dataSnapshot.getValue(User.class);
+                    Log.d(TAG, "Friend child added: " + user.toString());
+                    onGetDataListener.onChildAdded(user);
                 }
 
                 @Override
@@ -87,7 +76,7 @@ public class FriendshipDatabase {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.child(hostId).hasChild(friend.getId())) {
-                    friendshipReference.child(hostId).child(friend.getId()).setValue(friend);
+                    friendshipReference.child(friend.getId()).setValue(friend);
                 }
             }
 

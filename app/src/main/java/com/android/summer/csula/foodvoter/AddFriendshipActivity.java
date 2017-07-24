@@ -41,11 +41,11 @@ public class AddFriendshipActivity extends AppCompatActivity implements UsersAda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friendship);
 
-        userDatabase = UserDatabase.get();
-        friendshipDatabase = FriendshipDatabase.get(this);
-
         Intent intent = getIntent();
         userId = intent.getStringExtra(EXTRA_ID);
+
+        userDatabase = UserDatabase.get();
+        friendshipDatabase = new FriendshipDatabase(this, userId);
 
         userRecyclerView = (RecyclerView) findViewById(R.id.rv_all_users);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -60,9 +60,15 @@ public class AddFriendshipActivity extends AppCompatActivity implements UsersAda
         Log.d(TAG, "User that was clicked: " + clickedUser.toString());
         friendshipDatabase.befriendUser(userId, clickedUser);
         Toast.makeText(this, clickedUser.getUsername() + " added to your friend list!",
-                Toast.LENGTH_SHORT).show();
+                       Toast.LENGTH_SHORT) .show();
     }
 
     @Override
-    public void onChildAdded(FriendList friendList) { }
+    protected void onPause() {
+        super.onPause();
+        friendshipDatabase.detachReadListener();
+    }
+
+    @Override
+    public void onChildAdded(User friend) { }
 }

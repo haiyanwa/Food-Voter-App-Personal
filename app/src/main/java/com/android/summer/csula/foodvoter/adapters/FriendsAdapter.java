@@ -11,11 +11,12 @@ import android.widget.TextView;
 import com.android.summer.csula.foodvoter.R;
 import com.android.summer.csula.foodvoter.models.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
 
-    private List<User> friends;
+    private List<User> friends = new ArrayList<>();
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -40,13 +41,20 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     }
 
     public void clear() {
-       friends = null;
+        friends.clear();
+        notifyDataSetChanged();
     }
 
     public void setFriends(List<User> friends) {
         this.friends = friends;
         notifyDataSetChanged();
     }
+
+   public void addFriend(User friend) {
+       friends.add(friend);
+       notifyDataSetChanged();
+   }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView friendUsernameTextView;

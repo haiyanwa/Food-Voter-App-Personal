@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 import com.android.summer.csula.foodvoter.adapters.FriendsAdapter;
 import com.android.summer.csula.foodvoter.database.FriendshipDatabase;
 import com.android.summer.csula.foodvoter.database.UserDatabase;
-import com.android.summer.csula.foodvoter.models.FriendList;
 import com.android.summer.csula.foodvoter.models.User;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,9 +29,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class HomeActivity extends AppCompatActivity implements FriendshipDatabase.OnGetDataListener {
 
@@ -63,8 +59,6 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
     private FriendshipDatabase friendshipDatabase;
 
 
-    private List<User> friendList = new ArrayList<>();
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
@@ -73,7 +67,6 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
         firebaseDatabase = FirebaseDatabase.getInstance();
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
         userDatabase = UserDatabase.get();
-        friendshipDatabase = FriendshipDatabase.get(this);
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = setupAuthStateListener();
@@ -91,8 +84,8 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
         addFriendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intentAddFriendsActivity = AddFriendshipActivity
-                        .newIntent(HomeActivity.this, firebaseUser.getUid());
+                Intent intentAddFriendsActivity = AddFriendshipActivity.newIntent(
+                    HomeActivity.this, firebaseUser.getUid());
                 startActivity(intentAddFriendsActivity);
             }
         });
@@ -123,15 +116,15 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setAvailableProviders(
-                                            Arrays.asList(
-                                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
-                                    ).build(),
-                            REQUEST_CODE_SIGN_IN);
+                        AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setIsSmartLockEnabled(false)
+                            .setAvailableProviders(
+                                Arrays.asList(
+                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
+                            ).build(),
+                        REQUEST_CODE_SIGN_IN);
                 }
             }
         };
@@ -150,6 +143,8 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
 
     private void attachDatabaseReadListener() {
         userDatabase.attachReadListener();
+
+        friendshipDatabase = new FriendshipDatabase(this, firebaseUser.getUid());
         friendshipDatabase.attachReadListener();
     }
 
@@ -184,7 +179,10 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
 
     private void detachDatabaseReadListener() {
         userDatabase.detachReadListener();
-        friendshipDatabase.detachReadListener();
+
+        if (friendshipDatabase != null) {
+            friendshipDatabase.detachReadListener();
+        }
     }
 
     @Override
@@ -210,8 +208,7 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
 
         if (requestCode == REQUEST_CODE_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Signed in as " + getSignedInUsername(),
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Signed in as " + getSignedInUsername(), Toast.LENGTH_LONG).show();
             } else if (resultCode == RESULT_CANCELED) {
                 finish();
             }
@@ -249,12 +246,8 @@ public class HomeActivity extends AppCompatActivity implements FriendshipDatabas
     }
 
     @Override
-    public void onChildAdded(FriendList friendList) {
-        if (friendList.getHostId().equals(firebaseUser.getUid())) {
-            this.friendList = friendList.getFriends();
-            Log.d(TAG, "my friends count: ..." + friendList.getFriends().size());
-            friendsAdapter.setFriends(friendList.getFriends());
-        }
+    public void onChildAdded(User friend) {
+        friendsAdapter.addFriend(friend);
     }
 }
 
