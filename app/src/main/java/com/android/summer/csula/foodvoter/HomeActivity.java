@@ -66,7 +66,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         startPollBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(HomeActivity.this, "This feature is not implemented yet!", Toast.LENGTH_SHORT).show();
+                startActivity(PollActivity.newIntent(HomeActivity.this));
             }
         });
     }
