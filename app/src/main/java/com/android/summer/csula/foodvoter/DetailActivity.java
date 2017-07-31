@@ -3,6 +3,7 @@ package com.android.summer.csula.foodvoter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -28,9 +29,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public class DetailActivity extends AppCompatActivity {
 
     //this is tempoary, will need to find a way to get data for long and lat
-    static final String longitude = "34.004507";
-    static final String lattitude = "-118.256703";
-    static final String STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=1500x300&scale=2&sensor=false";
+    static final String longitude = "34.137022";
+    static final String lattitude = "-118.352266";
+    static final String STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 //    static final String STATIC_MAP_API_ENDPOINT = "http://maps.google.com/maps/api/staticmap?center=34.004507,-118.256703&zoom=13&markers=size:mid|color:red|label:E|34.004507,-118.256703&size=1500x300&sensor=false";
 
     
@@ -38,9 +39,9 @@ public class DetailActivity extends AppCompatActivity {
     TextView phone;
     TextView address;
     Details details;
-    String phoneNumber = "323-233-1444";
-    String restAddress = "4351 S Central Ave, Los Angeles, CA 90011";
-    String restName = "Pizza Hut";
+    String phoneNumber = "(818) 753-4867";
+    String restAddress = "1000 Universal Studios Blvd #114, Universal City, CA 91608";
+    String restName = "Bubba Gump Shrimp Co.";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +79,7 @@ public class DetailActivity extends AppCompatActivity {
 
 
     public void viewModel(){
+
         details = new Details();
 
         phone = (TextView) findViewById(R.id.phoneNumber);
@@ -91,6 +93,14 @@ public class DetailActivity extends AppCompatActivity {
         name = (TextView) findViewById(R.id.restaurantName);
         details.setRestaurantName(restName);
         name.setText(details.getRestaurantName());
+
+        CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+        collapsingToolbar.setTitle(details.getRestaurantName());
+
+
+        collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
+
+        collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
 
 
     }

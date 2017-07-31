@@ -4,4 +4,6 @@
   <string name="btn_start_poll">Start A Poll</string>
   <string name="btn_active_poll">Active Poll</string>
   <string name="tv_friends_list">Friends List</string>
+  <string name="sampe_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin consectetur diam id aliquam scelerisque. Donec ultrices lacus vel dignissim pharetra. Vivamus pharetra augue quis rhoncus placerat. Sed ultricies at risus non cursus. Nam rutrum leo nec placerat consectetur. Vestibulum feugiat eleifend diam, nec interdum augue tincidunt sit amet. Praesent feugiat est auctor lacus consectetur, vitae pellentesque dolor laoreet.</string>
+
 </resources>
