@@ -1,7 +1,10 @@
-package com.android.summer.csula.foodvoter.yelpApi;
+package com.android.summer.csula.foodvoter.yelpApi.tasks;
 
 
 import android.net.Uri;
+
+import com.android.summer.csula.foodvoter.yelpApi.models.YelpAccessToken;
+import com.android.summer.csula.foodvoter.yelpApi.utils.NetworkUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,7 +35,7 @@ public class RequestAccessTokenTask {
 
     public static YelpAccessToken execute() throws IOException, JSONException {
         URL tokenUrl = buildTokenUrl();
-        String jsonResponse = NetworkUtils.getResponseFromHttpUrl(tokenUrl, NetworkUtils.POST_REQUEST);
+        String jsonResponse = NetworkUtils.getJsonResponseFromHttpUrl(tokenUrl, NetworkUtils.POST_REQUEST, null);
         JSONObject json = new JSONObject(jsonResponse);
 
         String accessToken = json.getString(ACCESS_TOKEN);

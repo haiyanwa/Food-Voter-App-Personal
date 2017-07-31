@@ -1,4 +1,4 @@
-package com.android.summer.csula.foodvoter.yelpApi;
+package com.android.summer.csula.foodvoter.yelpApi.utils;
 
 
 import java.io.IOException;
@@ -12,10 +12,18 @@ public class NetworkUtils {
     public static final String POST_REQUEST = "POST";
     public static final String GET_REQUEST = "GET";
 
-    public static String getResponseFromHttpUrl(URL url, String requestMethod) throws IOException {
+    public static String getJsonResponseFromHttpUrl(URL url,
+                                                    String requestMethod,
+                                                    String authorization) throws IOException {
+
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod(requestMethod);
+        urlConnection.setRequestProperty("Content-Type", "application/json");
+
+        if (authorization != null) {
+            urlConnection.setRequestProperty("authorization", authorization);
+        }
 
         try {
             InputStream in = urlConnection.getInputStream();
@@ -33,4 +41,5 @@ public class NetworkUtils {
             urlConnection.disconnect();
         }
     }
+
 }

@@ -1,4 +1,4 @@
-package com.android.summer.csula.foodvoter.yelpApi;
+package com.android.summer.csula.foodvoter.yelpApi.models;
 
 
 public class YelpAccessToken {
@@ -23,6 +23,10 @@ public class YelpAccessToken {
 
     public int getExpiresIn() {
         return expiresIn;
+    }
+
+    public String authorizationHttpHeader() {
+        return "Bearer" + " " + accessToken;
     }
 
     @Override
