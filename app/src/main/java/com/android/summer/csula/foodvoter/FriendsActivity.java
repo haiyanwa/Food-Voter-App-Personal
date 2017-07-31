@@ -12,28 +12,23 @@ import android.util.Log;
 import android.view.View;
 
 import com.android.summer.csula.foodvoter.adapters.FriendsAdapter;
-import com.android.summer.csula.foodvoter.database.FriendshipDatabase;
-import com.android.summer.csula.foodvoter.database.UserDatabase;
+import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
-import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.List;
 
 import static android.support.v7.widget.RecyclerView.*;
 
 public class FriendsActivity extends AppCompatActivity implements
-        FriendshipDatabase.OnGetDataListener,
         FriendsAdapter.FriendsAdapterListener,
-        UserDatabase.UserDatabaseListener {
+        FoodVoterFirebaseDb.Listener {
 
     private static final String EXTRA_USER_ID = "user_id";
     private static final String TAG = FriendsActivity.class.getSimpleName();
 
     private RecyclerView friendsRecyclerView;
     private FriendsAdapter friendsAdapter;
-    private FriendshipDatabase friendshipDatabase;
     private FloatingActionButton addFriendButton;
-    private UserDatabase userDatabase;
+
+    private FoodVoterFirebaseDb foodVoterFirebaseDb;
 
     private String userId;
 
@@ -62,9 +57,8 @@ public class FriendsActivity extends AppCompatActivity implements
     }
 
     private void initDatabase() {
-        userDatabase = new UserDatabase(this);
-        friendshipDatabase = new FriendshipDatabase(this, userId);
-        friendshipDatabase.attachReadListener();
+        foodVoterFirebaseDb = new FoodVoterFirebaseDb(this, userId);
+        foodVoterFirebaseDb.attachReadListener();
     }
 
     private void initViews() {
@@ -98,7 +92,7 @@ public class FriendsActivity extends AppCompatActivity implements
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 User friend = (User) viewHolder.itemView.getTag();
                 Log.d(TAG, "swipe friend: " + friend.toString());
-                friendshipDatabase.unfriendUser(userId, friend);
+                foodVoterFirebaseDb.unfriendUser(userId, friend);
                 friendsAdapter.removeFriend(friend);
 
             }
@@ -113,7 +107,7 @@ public class FriendsActivity extends AppCompatActivity implements
 
     @Override
     public void unfriend(User user) {
-        friendshipDatabase.unfriendUser(userId, user);
+        foodVoterFirebaseDb.unfriendUser(userId, user);
     }
 
     @Override
@@ -125,7 +119,7 @@ public class FriendsActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        friendshipDatabase.detachReadListener();
+        foodVoterFirebaseDb.detachReadListener();
         friendsAdapter.clear();
     }
 

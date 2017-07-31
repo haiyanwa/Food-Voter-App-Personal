@@ -5,10 +5,8 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,7 +15,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.summer.csula.foodvoter.database.UserDatabase;
+import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,8 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 
-public class HomeActivity extends AppCompatActivity implements
-        UserDatabase.UserDatabaseListener {
+public class HomeActivity extends AppCompatActivity implements FoodVoterFirebaseDb.Listener {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
     private static final int REQUEST_CODE_SIGN_IN = 1;
@@ -50,7 +47,7 @@ public class HomeActivity extends AppCompatActivity implements
     private TextView usernameTextView;
     private Button startPollBtn;
 
-    private UserDatabase userDatabase;
+    private FoodVoterFirebaseDb database;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +56,6 @@ public class HomeActivity extends AppCompatActivity implements
 
         /* Setup firebase database */
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
-        userDatabase = new UserDatabase(this);
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = setupAuthStateListener();
@@ -102,6 +98,7 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void onSignedInInitialized() {
+        database = new FoodVoterFirebaseDb(this, firebaseUser.getUid());
         usernameTextView.setText(firebaseUser.getDisplayName());
         addNewUserToDatabase();
         attachDatabaseReadListener();
@@ -109,11 +106,11 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void addNewUserToDatabase() {
-        userDatabase.addNewUserToDatabase(firebaseUser);
+        database.addNewUserToDatabase(firebaseUser);
     }
 
     private void attachDatabaseReadListener() {
-        userDatabase.attachReadListener();
+        database.attachReadListener();
     }
 
     private void attachConnectedValueListener() {
@@ -146,7 +143,7 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void detachDatabaseReadListener() {
-        userDatabase.detachReadListener();
+        database.detachReadListener();
     }
 
     @Override
@@ -214,7 +211,7 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void setUserOnlineStatusTo(final boolean isOnline) {
-        userDatabase.setUserOnlineStatus(firebaseUser, isOnline);
+        database.setUserOnlineStatus(firebaseUser, isOnline);
     }
 
 
@@ -223,5 +220,8 @@ public class HomeActivity extends AppCompatActivity implements
 
     @Override
     public void onUserChanged(User user) { } // Left intentionally blank
+
+    @Override
+    public void onFriendAdded(User user) { } // Left intentionally blank
 }
 
