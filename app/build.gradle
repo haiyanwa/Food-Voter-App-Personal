@@ -37,6 +37,10 @@ dependencies {
     compile 'com.google.firebase:firebase-database:11.0.1'
     compile 'com.google.firebase:firebase-auth:11.0.1'
     compile 'com.firebaseui:firebase-ui-auth:2.0.1'
+
+    //httpclient
+    compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+    compile 'org.apache.httpcomponents:httpclient:4.5'
 }
 
 apply plugin: 'com.google.gms.google-services'
