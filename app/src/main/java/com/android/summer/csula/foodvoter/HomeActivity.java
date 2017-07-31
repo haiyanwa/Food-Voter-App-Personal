@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -83,15 +82,15 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setAvailableProviders(
-                                            Arrays.asList(
-                                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
-                                    ).build(),
-                            REQUEST_CODE_SIGN_IN);
+                        AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setIsSmartLockEnabled(false)
+                            .setAvailableProviders(
+                                Arrays.asList(
+                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
+                            ).build(),
+                        REQUEST_CODE_SIGN_IN);
                 }
             }
         };
@@ -143,7 +142,9 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     }
 
     private void detachDatabaseReadListener() {
-        database.detachReadListener();
+        if (database != null) {
+            database.detachReadListener();
+        }
     }
 
     @Override
