@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
+import com.android.summer.csula.foodvoter.poll.PollActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
