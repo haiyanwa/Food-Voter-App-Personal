@@ -7,23 +7,27 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
 
 import com.android.summer.csula.foodvoter.R;
 
 public class PollActivity extends AppCompatActivity {
 
 
+    private static final String EXTRA_USER_ID = "userId";
+    private static final String TAG = PollActivity.class.getSimpleName();
+
     private TabLayout tabLayout;
     private Fragment settingFragment;
     private Fragment invitesFragment;
 
+    private String userId;
 
     public PollActivity() {}
 
-    public static Intent newIntent(Context context) {
-        return new Intent(context, PollActivity.class);
+    public static Intent newIntent(Context context, String userId) {
+        Intent intent = new Intent(context, PollActivity.class);
+        intent.putExtra(EXTRA_USER_ID, userId);
+        return intent;
     }
 
     @Override
@@ -31,12 +35,13 @@ public class PollActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_poll);
 
+        userId = getIntent().getStringExtra(EXTRA_USER_ID);
         initTabLayout();
     }
 
     private void initTabLayout() {
         settingFragment = new SettingFragment();
-        invitesFragment = new InvitesFragment();
+        invitesFragment = InvitesFragment.newInstance(userId);
 
         tabLayout = (TabLayout) findViewById(R.id.tab_layout_poll);
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {

@@ -17,4 +17,6 @@
   <string name="radio_button_use_zip_code">Use Zip Code</string>
   <string name="text_view_price_filter">Price Filter</string>
   <string name="text_view_open_now">Open Now?</string>
+  <string name="text_view_invited_title"><u>Invited Friends</u></string>
+  <string name="text_view_friends_list_title"><u>Friends</u></string>
 </resources>
