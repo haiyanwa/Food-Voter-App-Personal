@@ -3,17 +3,19 @@ package com.android.summer.csula.foodvoter.yelpApi.models;
 
 public class Coordinate {
 
-
     /**
      * The latitude of this business.
      */
     private double latitude;
 
-
     /**
      * The longitude of this business.
      */
     private double longitude;
+
+
+    public Coordinate() {}
+
 
     public double getLatitude() {
         return latitude;

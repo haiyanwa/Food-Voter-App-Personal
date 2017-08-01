@@ -47,6 +47,9 @@ public class Location {
     private List<String> displayAddress;
 
 
+    public Location() {}
+
+
     public String getAddress1() {
         return address1;
     }

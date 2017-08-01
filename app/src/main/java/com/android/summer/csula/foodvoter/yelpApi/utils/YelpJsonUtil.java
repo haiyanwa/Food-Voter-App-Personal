@@ -16,13 +16,16 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class handle the tedious conversion from yelp json response into an Java Object
+ */
 public class YelpJsonUtil {
 
-    /* Yelp JSON object fields */
+    /* Yelp JSON fields */
     private static final String TOTAL = "total";
     private static final String BUSINESSES_ARRAY = "businesses";
 
-    /* Business JSON object fields */
+    /* Business JSON fields */
     private static final String DISPLAY_PHONE = "display_phone";
     private static final String DISTANCE = "distance";
     private static final String ID = "id";
@@ -37,7 +40,7 @@ public class YelpJsonUtil {
     private static final String LOCATION = "location";
     private static final String COORDINATES = "coordinates";
 
-    /* Categories JSON object fields */
+    /* Categories JSON fields */
     private static final String ALIAS = "alias";
     private static final String TITLE = "title";
 
@@ -55,7 +58,9 @@ public class YelpJsonUtil {
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
-
+    /**
+     * Convert Yelp Api JSON String into a Java Object
+     */
     public static Yelp parse(String yelpJsonResponse) {
 
         try {

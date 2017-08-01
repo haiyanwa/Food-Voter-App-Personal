@@ -14,13 +14,21 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * Helper class use to retrieve a Yelp object (contains business info)
+ */
 public class RequestYelpSearchTask {
 
+    /**
+     * Make a call to Yelp Fashion API. Please use the SearchBuilder class to create the URL because
+     * the HTTP requires a special Yelp Authorization that the SearchBuilder class handles.
+     */
+    @Nullable
     public static Yelp execute(URL searchUrl) {
         Yelp yelp = null;
 
         try {
-            YelpAccessToken token = RequestAccessTokenTask.execute();
+            YelpAccessToken token = RequestYelpAccessTokenTask.execute();
             String jsonResponse = NetworkUtils.getJsonResponseFromHttpUrl(
                 searchUrl, NetworkUtils.GET_REQUEST, token.authorizationHttpHeader());
             yelp = YelpJsonUtil.parse(jsonResponse);
@@ -31,6 +39,9 @@ public class RequestYelpSearchTask {
         return yelp;
     }
 
+    /**
+     * This builder class is use to assist you in building a Yelp search URL object.
+     */
     public static class SearchBuilder {
 
         private static final String YELP_SEARCH_BASE_URL = "https://api.yelp.com/v3/businesses/search";
@@ -42,8 +53,9 @@ public class RequestYelpSearchTask {
         private static final String LIMIT_PARAM = "limit";
         private static final String TERM_PARAM = "term";
 
-
+        /* Returns up to 50 restaurants. */
         private static final int MAX_LIMIT = 50;
+        private static final String DEFAULT_SEARCH_TERM = "food";
 
         /* required if lat and long not provided */
         private String location;
@@ -51,10 +63,14 @@ public class RequestYelpSearchTask {
         /* required if location is not provided */
         private String latitude;
         private String longitude;
+
         private int limit = MAX_LIMIT;
-        private String term = "food";
+        private String term = DEFAULT_SEARCH_TERM;
 
 
+        /**
+         * Build a Yelp Search URL. Required: location(zip code) OR longitude AND latitude
+         */
         public URL build() throws Exception {
             Uri.Builder builder = Uri.parse(YELP_SEARCH_BASE_URL).buildUpon();
             builder.appendQueryParameter(LIMIT_PARAM, Integer.toString(limit));

@@ -32,7 +32,6 @@ public class Business {
      */
     private String id;
 
-
     /**
      * URL of photo for this business.
      */
@@ -54,7 +53,6 @@ public class Business {
      */
     private String price;
 
-
     /**
      * Rating for this business (value ranges from 1, 1.5, ... 4.5, 5).
      */
@@ -65,18 +63,21 @@ public class Business {
      */
     private int reviewCount;
 
-
     /**
      * URL for business page on Yelp.
      */
     private String url;
 
-
     /**
      * A list of Yelp transactions that the business is registered for.
      * Current supported values are "pickup", "delivery", and "restaurant_reservation".
+     * Refer to the Transactions inner class.
      */
     private List<String> transactions;
+
+
+    public Business() {}
+
 
     public String getDisplayPhone() {
         return displayPhone;
@@ -180,6 +181,15 @@ public class Business {
 
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
+    }
+
+
+    public static final class Transactions {
+
+        public static final String PICK_UP = "pickup";
+        public static final String DELIVERY = "delivery";
+        public static final String RESTAURANT_RESERVATION = "restaurant_reservation";
+
     }
 }
 

@@ -3,8 +3,22 @@ package com.android.summer.csula.foodvoter.yelpApi.models;
 
 public class YelpAccessToken {
 
+    /**
+     * The client id for you app with Yelp.
+     */
     private String accessToken;
+
+    /**
+     * The access token type. Always returns Bearer.
+     */
     private String tokenType;
+
+
+    /**
+     * Represents the number of seconds after which this access token will expire.
+     * Right now it's always 15552000, which is 180 days.
+     * Time start on INITIAL creation.
+     */
     private int expiresIn;
 
     public YelpAccessToken(String accessToken, String tokenType, int expiresIn) {
