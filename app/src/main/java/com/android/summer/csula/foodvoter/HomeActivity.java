@@ -1,15 +1,11 @@
 package com.android.summer.csula.foodvoter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,10 +14,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.summer.csula.foodvoter.adapters.FriendsAdapter;
-import com.android.summer.csula.foodvoter.database.FriendshipDatabase;
-import com.android.summer.csula.foodvoter.database.UserDatabase;
+import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
+import com.android.summer.csula.foodvoter.poll.PollActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,8 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 
-public class HomeActivity extends AppCompatActivity implements
-    FriendshipDatabase.OnGetDataListener, UserDatabase.UserDatabaseListener {
+public class HomeActivity extends AppCompatActivity implements FoodVoterFirebaseDb.Listener {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
     private static final int REQUEST_CODE_SIGN_IN = 1;
@@ -44,7 +38,6 @@ public class HomeActivity extends AppCompatActivity implements
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
 
-    private FirebaseDatabase firebaseDatabase;
     private DatabaseReference connectedDatabaseReference;
 
     private ValueEventListener connectedValueListener;
@@ -52,14 +45,9 @@ public class HomeActivity extends AppCompatActivity implements
     private FirebaseUser firebaseUser;
 
     private TextView usernameTextView;
-    private FloatingActionButton addFriendButton;
     private Button startPollBtn;
-    private Button activePollBtn;
-    private RecyclerView recyclerView;
-    private FriendsAdapter friendsAdapter;
 
-    private UserDatabase userDatabase;
-    private FriendshipDatabase friendshipDatabase;
+    private FoodVoterFirebaseDb database;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,71 +55,20 @@ public class HomeActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_home);
 
         /* Setup firebase database */
-        firebaseDatabase = FirebaseDatabase.getInstance();
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
-        userDatabase = new UserDatabase(this);
-            // Left intentionally blank
-
 
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = setupAuthStateListener();
 
-        /* Set up views*/
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        friendsAdapter = new FriendsAdapter(new FriendsAdapter.FriendsAdapterListener() {
-            @Override
-            public void unfriend(User user) {
-                friendshipDatabase.unfriendUser(firebaseUser.getUid(), user);
-            }
-        });
-
-        recyclerView = (RecyclerView) findViewById(R.id.rv_friend_list);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(friendsAdapter);
-
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-                User friend  = (User) viewHolder.itemView.getTag();
-                Log.d(TAG, "swipe friend: " + friend.toString());
-                friendshipDatabase.unfriendUser(firebaseUser.getUid(), friend);
-                friendsAdapter.removeFriend(friend);
-
-            }
-        }).attachToRecyclerView(recyclerView);
-
         usernameTextView = (TextView) findViewById(R.id.tv_username);
-
-        addFriendButton = (FloatingActionButton) findViewById(R.id.btn_add_friend);
-        addFriendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intentAddFriendsActivity = AddFriendshipActivity.newIntent(
-                    HomeActivity.this, firebaseUser.getUid());
-                startActivity(intentAddFriendsActivity);
-            }
-        });
 
         startPollBtn = (Button) findViewById(R.id.btn_start_poll);
         startPollBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(HomeActivity.this, "This feature is not implemented yet!", Toast.LENGTH_SHORT).show();
+                startActivity(PollActivity.newIntent(HomeActivity.this));
             }
         });
-
-        activePollBtn = (Button) findViewById(R.id.btn_active_poll);
-        activePollBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) { }
-        });
-
     }
 
     private FirebaseAuth.AuthStateListener setupAuthStateListener() {
@@ -161,6 +98,7 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void onSignedInInitialized() {
+        database = new FoodVoterFirebaseDb(this, firebaseUser.getUid());
         usernameTextView.setText(firebaseUser.getDisplayName());
         addNewUserToDatabase();
         attachDatabaseReadListener();
@@ -168,14 +106,11 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void addNewUserToDatabase() {
-        userDatabase.addNewUserToDatabase(firebaseUser);
+        database.addNewUserToDatabase(firebaseUser);
     }
 
     private void attachDatabaseReadListener() {
-        userDatabase.attachReadListener();
-
-        friendshipDatabase = new FriendshipDatabase(this, firebaseUser.getUid());
-        friendshipDatabase.attachReadListener();
+        database.attachReadListener();
     }
 
     private void attachConnectedValueListener() {
@@ -208,10 +143,8 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void detachDatabaseReadListener() {
-        userDatabase.detachReadListener();
-
-        if (friendshipDatabase != null) {
-            friendshipDatabase.detachReadListener();
+        if (database != null) {
+            database.detachReadListener();
         }
     }
 
@@ -228,7 +161,6 @@ public class HomeActivity extends AppCompatActivity implements
         if (authStateListener != null) {
             firebaseAuth.removeAuthStateListener(authStateListener);
         }
-        friendsAdapter.clear();
         detachDatabaseReadListener();
     }
 
@@ -257,14 +189,23 @@ public class HomeActivity extends AppCompatActivity implements
         final int selectedItemId = item.getItemId();
 
         switch (selectedItemId) {
+            case R.id.friends_menu:
+                launchFriendsActivity();
+                return true;
             case R.id.sign_out_menu:
                 setUserOnlineStatusTo(OFFLINE);
                 AuthUI.getInstance().signOut(this);
-                friendsAdapter.clear();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void launchFriendsActivity() {
+        String userId = firebaseUser.getUid();
+        Context context = this;
+        Intent friendsIntent = FriendsActivity.newIntent(context, userId);
+        startActivity(friendsIntent);
     }
 
     private String getSignedInUsername() {
@@ -272,21 +213,17 @@ public class HomeActivity extends AppCompatActivity implements
     }
 
     private void setUserOnlineStatusTo(final boolean isOnline) {
-        userDatabase.setUserOnlineStatus(firebaseUser, isOnline);
+        database.setUserOnlineStatus(firebaseUser, isOnline);
     }
 
-    @Override
-    public void onFriendAdded(User friend) {
-        friendsAdapter.addFriend(friend);
-    }
 
     @Override
     public void onUserAdded(User user) { } // Left intentionally blank
 
     @Override
-    public void onUserChanged(User user) {
-        Log.d(TAG, "onUserChanged: " + user.toString());
-        friendsAdapter.updateFriend(user);
-    }
+    public void onUserChanged(User user) { } // Left intentionally blank
+
+    @Override
+    public void onFriendAdded(User user) { } // Left intentionally blank
 }
 
