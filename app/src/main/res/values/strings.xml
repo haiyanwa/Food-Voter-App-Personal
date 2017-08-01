@@ -12,4 +12,9 @@
   <string name="tab_item_invites">Invites</string>
   <string name="tab_item_settings">Settings</string>
   <string name="button_submit">Submit</string>
+  <string name="edit_text_zip_code_hint">Zip Code</string>
+  <string name="radio_button_current_location">Current Location</string>
+  <string name="radio_button_use_zip_code">Use Zip Code</string>
+  <string name="text_view_price_filter">Price Filter</string>
+  <string name="text_view_open_now">Open Now?</string>
 </resources>

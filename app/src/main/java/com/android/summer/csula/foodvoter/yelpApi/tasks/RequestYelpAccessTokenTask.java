@@ -22,7 +22,6 @@ class RequestYelpAccessTokenTask {
     /* Base URL */
     private static final String YELP_TOKEN_URL = "https://api.yelp.com/oauth2/token";
 
-
     /**
      * The client id for you app with Yelp.
      */

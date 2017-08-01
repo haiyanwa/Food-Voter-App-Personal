@@ -4,6 +4,7 @@ package com.android.summer.csula.foodvoter.yelpApi.tasks;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
+import com.android.summer.csula.foodvoter.yelpApi.models.Price;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 import com.android.summer.csula.foodvoter.yelpApi.models.YelpAccessToken;
 import com.android.summer.csula.foodvoter.yelpApi.utils.NetworkUtils;
@@ -53,6 +54,9 @@ public class RequestYelpSearchTask {
         private static final String LIMIT_PARAM = "limit";
         private static final String TERM_PARAM = "term";
 
+        private static final String PRICE_PARAM = "price";
+        private static final String OPEN_NOW_PARAM = "open_now";
+
         /* Returns up to 50 restaurants. */
         private static final int MAX_LIMIT = 50;
         private static final String DEFAULT_SEARCH_TERM = "food";
@@ -67,15 +71,21 @@ public class RequestYelpSearchTask {
         private int limit = MAX_LIMIT;
         private String term = DEFAULT_SEARCH_TERM;
 
+        private String price;
+
+        private boolean openNow;
 
         /**
          * Build a Yelp Search URL. Required: location(zip code) OR longitude AND latitude
          */
         public URL build() throws Exception {
             Uri.Builder builder = Uri.parse(YELP_SEARCH_BASE_URL).buildUpon();
+
+            /* Default fields */
             builder.appendQueryParameter(LIMIT_PARAM, Integer.toString(limit));
             builder.appendQueryParameter(TERM_PARAM, term);
 
+            /* Mandatory fields  */
             if (location != null) {
                 builder.appendQueryParameter(LOCATION_PARAM, location);
             } else if (latitude != null & longitude != null) {
@@ -84,6 +94,12 @@ public class RequestYelpSearchTask {
             } else {
                 throw new Exception("Location(zipCode) or Longitude and Latitude is required!");
             }
+
+            /* Optionals */
+            if (price != null) {
+                builder.appendQueryParameter(PRICE_PARAM, price);
+            }
+            builder.appendQueryParameter(OPEN_NOW_PARAM, Boolean.toString(openNow));
 
             Uri uri = builder.build();
             return new URL(uri.toString());
@@ -104,6 +120,17 @@ public class RequestYelpSearchTask {
             return this;
         }
 
-    }
 
+        /* TODO: handle case where we can include a range of prices: $-$$$ */
+        public SearchBuilder price(Price price) {
+            this.price = Integer.toString(price.value);
+            return this;
+        }
+
+
+        public SearchBuilder openNow(boolean openNow) {
+            this.openNow = openNow;
+            return this;
+        }
+    }
 }
