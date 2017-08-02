@@ -21,8 +21,6 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
     private static final String TAG = PollActivity.class.getSimpleName();
 
     private TabLayout tabLayout;
-    private Fragment settingFragment;
-    private Fragment invitesFragment;
 
     private String userId;
     private Poll poll;
@@ -47,7 +45,7 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
 
         database = FirebaseDatabase.getInstance();
         pollRef = database.getReference().child("polls").push();
-        poll = new Poll(userId);
+        poll = new Poll(userId, pollRef.getKey());
         pollRef.setValue(poll);
 
         initTabLayout();
@@ -61,10 +59,6 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
     }
 
     private void initTabLayout() {
-        settingFragment = SettingFragment.newInstance(pollRef.getKey());
-
-        invitesFragment = InvitesFragment.newInstance(userId);
-
         tabLayout = (TabLayout) findViewById(R.id.tab_layout_poll);
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -83,7 +77,7 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
         /* Default fragment to settings */
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.poll_fragment_container, settingFragment)
+                .add(R.id.poll_fragment_container, SettingFragment.newInstance(poll))
                 .commit();
 
     }
@@ -96,9 +90,9 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
 
         pollRef.setValue(poll);
         if (selectedTab.equals(settings)) {
-            replaceFragment(settingFragment);
+            replaceFragment(SettingFragment.newInstance(poll));
         } else if (selectedTab.equals(invites)) {
-            replaceFragment(invitesFragment);
+            replaceFragment(InvitesFragment.newInstance(userId));
         }
     }
 

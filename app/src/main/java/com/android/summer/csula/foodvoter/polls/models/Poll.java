@@ -3,21 +3,24 @@ package com.android.summer.csula.foodvoter.polls.models;
 
 import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
+import com.android.summer.csula.foodvoter.yelpApi.models.YelpPriceLevel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Poll {
 
-    public static final String NONE = "none";
+
+    private static final String DEFAULT_PRICE = "1";
 
     private String authorId;
+    private String pollId;
 
-    private String title = NONE;
-    private String description = NONE;
+    private String title;
+    private String description;
     private Coordinate coordinate;
     private String zipCode;
-    private String price;
+    private String price = DEFAULT_PRICE;
     private boolean openNow;
 
     private boolean started;
@@ -30,8 +33,9 @@ public class Poll {
     public Poll() {}
 
 
-    public Poll(String authorId) {
+    public Poll(String authorId, String pollId) {
         this.authorId = authorId;
+        this.pollId = pollId;
         voters.add(new User("DEMO", "FAKE"));
     }
 
@@ -72,7 +76,7 @@ public class Poll {
     }
 
     public void setPrice(String price) {
-        this.price = price;
+        this.price = YelpPriceLevel.fromYelpString(price);
     }
 
     public boolean isOpenNow() {
@@ -123,6 +127,14 @@ public class Poll {
 
     public void removeVoters(User voter) {
         voters.remove(voter);
+    }
+
+    public String getPollId() {
+        return pollId;
+    }
+
+    public void setPollId(String pollId) {
+        this.pollId = pollId;
     }
 
     @Override

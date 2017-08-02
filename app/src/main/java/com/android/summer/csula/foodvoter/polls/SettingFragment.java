@@ -28,16 +28,25 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.R;
+import com.android.summer.csula.foodvoter.polls.models.Poll;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
+import com.android.summer.csula.foodvoter.yelpApi.models.YelpPriceLevel;
 
 import java.util.Arrays;
 
 public class SettingFragment extends Fragment {
 
-
     private static final String TAG = SettingFragment.class.getSimpleName();
+
+    private static final String KEY_POLL_ID = "pollKey";
+    private static final String KEY_DESCRIPTION = "description";
+    private static final String KEY_TITLE = "title";
+    private static final String KEY_AUTHOR_ID = "authorId";
+    private static final String KEY_ZIP_CODE = "zipCode";
+    private static final String KEY_PRICE = "price";
+    private static final String KEY_OPEN = "openNow";
+
     private static final int REQUEST_CODE_LOCATION = 123;
-    private static final String KEY_POLL_KEY = "pollKey";
 
     private Spinner priceSpinner;
     private EditText title;
@@ -52,17 +61,26 @@ public class SettingFragment extends Fragment {
     private View view;
 
     private Coordinate coordinate = new Coordinate();
-    private String pollKey;
 
 
-    public static SettingFragment newInstance(String pollKey) {
-        Bundle args = new Bundle();
-        args.putString(KEY_POLL_KEY, pollKey);
-
+    public static SettingFragment newInstance(Poll poll) {
         SettingFragment fragment = new SettingFragment();
-        fragment.setArguments(args);
-
+        fragment.setArguments(getPollBundle(poll));
         return fragment;
+    }
+
+    private static Bundle getPollBundle(Poll poll) {
+        Bundle args = new Bundle();
+
+        args.putString(KEY_AUTHOR_ID, poll.getAuthorId());
+        args.putString(KEY_POLL_ID, poll.getPollId());
+        args.putString(KEY_TITLE, poll.getTitle());
+        args.putString(KEY_DESCRIPTION, poll.getDescription());
+        args.putString(KEY_ZIP_CODE, poll.getZipCode());
+        args.putString(KEY_PRICE, poll.getPrice());
+        args.putBoolean(KEY_OPEN, poll.isOpenNow());
+
+        return args;
     }
 
     @Nullable
@@ -70,20 +88,21 @@ public class SettingFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        pollKey = getArguments().getString(KEY_POLL_KEY);
-        Log.d(TAG, "POLL KEY: " + pollKey);
-
         view = inflater.inflate(R.layout.setting_fragment, container, false);
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION);
 
         initializeUI();
-
         return view;
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode != REQUEST_CODE_LOCATION) {
+            return;
+        }
+
         Log.d(TAG, "requestCode: " + requestCode +
                 ", permission: " + Arrays.toString(permissions) +
                 ", grantedResults: " + Arrays.toString(grantResults));
@@ -102,8 +121,7 @@ public class SettingFragment extends Fragment {
 
         } catch (SecurityException e) {
             Log.e(TAG, "Location Failed!", e);
-            RadioButton rb = (RadioButton) view.findViewById(R.id.radio_button_current_location);
-            rb.setEnabled(false);
+            currentLocationRadioButton.setEnabled(false);
         }
     }
 
@@ -126,21 +144,33 @@ public class SettingFragment extends Fragment {
     private void setupCheckbox() {
         openNow = (CheckBox) view.findViewById(R.id.checkbox_open_now);
         openNow.setOnCheckedChangeListener(checkBoxChangeListener());
+
+        boolean pollOpenNow = getArguments().getBoolean(KEY_OPEN, false);
+        openNow.setChecked(pollOpenNow);
     }
 
     private void setupZipCode() {
         zipCode = (EditText) view.findViewById(R.id.edit_text_zip_code);
         zipCode.addTextChangedListener(zipCodeTextWatcher());
+
+        String pollZipCode = getArguments().getString(KEY_ZIP_CODE);
+        zipCode.setText(pollZipCode);
     }
 
     private void setupDescription() {
         description = (EditText) view.findViewById(R.id.edit_text_description);
         description.addTextChangedListener(descriptionTextWatcher());
+
+        String pollDescription = getArguments().getString(KEY_DESCRIPTION);
+        description.setText(pollDescription);
     }
 
     private void setupTitle() {
         title = (EditText) view.findViewById(R.id.edit_text_title);
         title.addTextChangedListener(titleTextWatcher());
+
+        String pollTitle = getArguments().getString(KEY_TITLE);
+        title.setText(pollTitle);
     }
 
     private void setupRadioGroups() {
@@ -191,8 +221,24 @@ public class SettingFragment extends Fragment {
         priceSpinner.setAdapter(adapter);
 
         priceSpinner.setOnItemSelectedListener(priceSpinnerListener());
+
+        String pollPrice = getArguments().getString(KEY_PRICE);
+        String yelpPollPrice = YelpPriceLevel.toYelpString(pollPrice);
+        int yelpPollPricePosition = getSpinnerPosition(yelpPollPrice);
+
+        priceSpinner.setSelection(yelpPollPricePosition);
+
     }
 
+    private int getSpinnerPosition(String yelpPriceLevel) {
+        for (int i = 0; i < priceSpinner.getCount(); i++) {
+            String item = (String) priceSpinner.getItemAtPosition(i);
+            if (yelpPriceLevel != null && yelpPriceLevel.equals(item)) {
+                return i;
+            }
+        }
+        return 0;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -290,4 +336,3 @@ public class SettingFragment extends Fragment {
         void onCoordinateChange(Coordinate coordinate);
     }
 }
-
