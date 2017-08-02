@@ -15,25 +15,23 @@ import android.widget.Toast;
 import com.android.summer.csula.foodvoter.R;
 import com.android.summer.csula.foodvoter.models.Invitee;
 import com.android.summer.csula.foodvoter.models.User;
+import com.android.summer.csula.foodvoter.polls.InvitesFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.android.summer.csula.foodvoter.polls.InvitesFragment.*;
 
 public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAdapter.ViewHolder> {
 
     private static final String TAG = FriendsInvitedAdapter.class.getSimpleName();
 
-    public interface OnInviteListener {
-        void onInvite(Invitee user);
-
-        void onUninvite(Invitee user);
-    }
 
     private List<Invitee> friends = new ArrayList<>();
 
-    private OnInviteListener listener;
+    private OnPollInvitesListener listener;
 
-    public FriendsInvitedAdapter(OnInviteListener listener) {
+    public FriendsInvitedAdapter(OnPollInvitesListener listener) {
         this.listener = listener;
     }
 
@@ -102,11 +100,11 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
                     if (!invitee.isInvited() && invitee.getUser().isOnline()) {
                         setInviteStyles();
                         invitee.setInvited(true);
-                        listener.onInvite(invitee);
+                        listener.onUserInvited(invitee.getId());
                     } else if (invitee.isInvited()) {
                         setUninvitedStyles();
                         invitee.setInvited(false);
-                        listener.onUninvite(invitee);
+                        listener.onUserUninvited(invitee.getId());
                     } else if (!invitee.getUser().isOnline()) {
                         Toast.makeText(view.getContext(), "Can't invite User who are not log on!", Toast.LENGTH_LONG).show();
                     }

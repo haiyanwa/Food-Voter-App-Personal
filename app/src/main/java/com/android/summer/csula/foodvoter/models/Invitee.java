@@ -34,4 +34,8 @@ public class Invitee {
     public boolean equals(Object obj) {
         return this.user.equals((User) obj);
     }
+
+    public String getId() {
+        return user.getId();
+    }
 }

@@ -54,8 +54,8 @@ public class SettingFragment extends Fragment {
     private RadioButton zipCodeRadioButton;
     private View view;
 
-    private OnPollListener onPollListener;
-    private Coordinate coordinate = new Coordinate();
+    private OnPollSettingsListener onPollSettingsListener;
+    private Coordinate coordinate;
 
     public SettingFragment() {}
 
@@ -126,10 +126,11 @@ public class SettingFragment extends Fragment {
                 Log.d(TAG, "onRequestPermissionsResult() - Location Object is null.");
             } else {
                 Log.d(TAG, "onRequestPermissionsResult() - " + location.getLatitude() + " " + location.getLongitude());
+                coordinate = new Coordinate();
                 coordinate.setLatitude(location.getLatitude());
                 coordinate.setLongitude(location.getLongitude());
 
-                onPollListener.onCoordinateChange(coordinate);
+                onPollSettingsListener.onCoordinateChange(coordinate);
             }
 
         } catch (SecurityException e) {
@@ -145,7 +146,7 @@ public class SettingFragment extends Fragment {
         // Activity MUST implement this interface because it is used to communicated between
         // this fragment and the host activity.
         try {
-            onPollListener = (OnPollListener) context;
+            onPollSettingsListener = (OnPollSettingsListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException("context must implement OnPollListener");
         }
@@ -174,7 +175,7 @@ public class SettingFragment extends Fragment {
         openNow.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                onPollListener.onOpenNowChange(b);
+                onPollSettingsListener.onOpenNowChange(b);
             }
         });
     }
@@ -190,7 +191,7 @@ public class SettingFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                onPollListener.onZipCodeChange(charSequence.toString());
+                onPollSettingsListener.onZipCodeChange(charSequence.toString());
             }
 
             @Override
@@ -209,7 +210,7 @@ public class SettingFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                onPollListener.onDescriptionChange(charSequence.toString());
+                onPollSettingsListener.onDescriptionChange(charSequence.toString());
             }
 
             @Override
@@ -228,7 +229,7 @@ public class SettingFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                onPollListener.onTitleChange(charSequence.toString());
+                onPollSettingsListener.onTitleChange(charSequence.toString());
             }
 
             @Override
@@ -246,6 +247,9 @@ public class SettingFragment extends Fragment {
                 } else if (R.id.radio_button_current_location == i) {
                     zipCode.getText().clear();
                     zipCode.setEnabled(false);
+                    if (coordinate != null) {
+                        onPollSettingsListener.onCoordinateChange(coordinate);
+                    }
                 }
             }
         });
@@ -267,16 +271,13 @@ public class SettingFragment extends Fragment {
         priceSpinner.setAdapter(adapter);
 
         // Update the spinner position
-        String pollPrice = getArguments().getString(KEY_PRICE);
-        String yelpPollPrice = YelpPriceLevel.toYelpString(pollPrice);
-        int yelpPollPricePosition = getSpinnerPosition(yelpPollPrice);
-        priceSpinner.setSelection(yelpPollPricePosition);
+        setSpinnerPosition();
 
         priceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 String value = adapterView.getItemAtPosition(i).toString();
-                onPollListener.onPriceChange(value);
+                onPollSettingsListener.onPriceChange(value);
             }
 
             @Override
@@ -284,6 +285,17 @@ public class SettingFragment extends Fragment {
         });
     }
 
+    private void setSpinnerPosition() {
+        String pollPrice = getArguments().getString(KEY_PRICE);
+        String yelpPollPrice = YelpPriceLevel.toYelpString(pollPrice);
+        int position = getSpinnerPosition(yelpPollPrice);
+        priceSpinner.setSelection(position);
+    }
+
+    /**
+     * Return the spinner position of a yelp price level ($, $$, $$$, $$$$). Defaults to 0 ($)
+     * if none are found (for some reason).
+     */
     private int getSpinnerPosition(String yelpPriceLevel) {
         for (int i = 0; i < priceSpinner.getCount(); i++) {
             String item = (String) priceSpinner.getItemAtPosition(i);
@@ -291,18 +303,21 @@ public class SettingFragment extends Fragment {
                 return i;
             }
         }
-
         // 0 is the $ in the spinner, which is the default price in the Poll class
         return 0;
     }
 
+    /**
+     * Return a listener that detects when the coordinates location of the device change.
+     * When a location changed, it will inform the Host Activity through the OnPollSettingInterface
+     */
     private LocationListener locationListener() {
         return new LocationListener() {
             public void onLocationChanged(Location location) {
                 Log.d(TAG, "Coordinate Changed: " + coordinate.toString());
                 coordinate.setLatitude(location.getLongitude());
                 coordinate.setLongitude(location.getLongitude());
-                onPollListener.onCoordinateChange(coordinate);
+                onPollSettingsListener.onCoordinateChange(coordinate);
             }
 
             @Override
@@ -313,7 +328,24 @@ public class SettingFragment extends Fragment {
 
             @Override
             public void onProviderDisabled(String s) { }
-
         };
+    }
+
+    /**
+     * This interface is use to let the host activity know when a setting field has change in the
+     * setting tab
+     */
+    interface OnPollSettingsListener {
+        void onTitleChange(String title);
+
+        void onDescriptionChange(String description);
+
+        void onOpenNowChange(boolean openNow);
+
+        void onPriceChange(String price);
+
+        void onZipCodeChange(String zipCode);
+
+        void onCoordinateChange(Coordinate coordinate);
     }
 }
