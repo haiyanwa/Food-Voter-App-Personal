@@ -10,6 +10,9 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.android.summer.csula.foodvoter.yelpApi.models.Business;
+import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
+
 import java.util.List;
 
 /**
@@ -26,7 +29,8 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
     private int mNumberItems;
 
-    private List<Restaurant> mChoiceData;
+    //private List<Restaurant> mChoiceData;
+    private List<Business> mChoiceData;
 
     private final int ListItem = 0;
     private final int EndOfList= 1;
@@ -42,8 +46,14 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
     }
 
 
-    public RVoteAdapter(List<Restaurant> restaurants, ListItemClickListener listener, SwitchListener swListener) {
+    /**public RVoteAdapter(List<Restaurant> restaurants, ListItemClickListener listener, SwitchListener swListener) {
         mChoiceData = restaurants;
+        mOnClickListener = listener;
+        switchListener = swListener;
+
+    }*/
+    public RVoteAdapter(List<Business> businesses, ListItemClickListener listener, SwitchListener swListener) {
+        mChoiceData = businesses;
         mOnClickListener = listener;
         switchListener = swListener;
 
@@ -80,6 +90,19 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
         return mChoiceData.size() + 1;
     }
 
+    public void swapData(Yelp yelp) {
+        // check if this cursor is the same as the previous cursor
+        //if same then return
+        if (mChoiceData == yelp.getBusinesses()) {
+            return;
+        }
+        //check if this is a valid cursor, then update the cursor
+        if (yelp.getBusinesses() != null) {
+            this.mChoiceData = yelp.getBusinesses();
+            this.notifyDataSetChanged();
+        }
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         public TextView choiceItemView;
@@ -97,8 +120,9 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
         public void bind(ViewHolder holder, int position){
             if(position < mChoiceData.size()){
-                Restaurant restaurant = mChoiceData.get(position);
-                choiceItemView.setText(restaurant.getName());
+                //Restaurant restaurant = mChoiceData.get(position);
+                Business business = mChoiceData.get(position);
+                choiceItemView.setText(business.getName());
 
                 voteSwitch.setTextOn("Yes");
                 voteSwitch.setTextOff("No");

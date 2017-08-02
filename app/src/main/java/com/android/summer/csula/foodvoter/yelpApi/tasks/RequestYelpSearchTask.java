@@ -120,6 +120,12 @@ public class RequestYelpSearchTask {
             return this;
         }
 
+        public SearchBuilder coordinates(String latitude, String longitude) {
+            this.latitude = latitude;
+            this.longitude = longitude;
+            return this;
+        }
+
 
         /* TODO: handle case where we can include a range of prices: $-$$$ */
         public SearchBuilder price(Price price) {
