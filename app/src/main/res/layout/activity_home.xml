@@ -7,30 +7,132 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="20dp"
-    android:weightSum="1"
+    android:scrollbars="none"
     tools:context="com.android.summer.csula.foodvoter.HomeActivity">
 
-  <TextView
-      android:id="@+id/tv_username"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:textSize="24sp"
-      tools:text="username"/>
-
-  <Button
-      android:id="@+id/btn_start_poll"
-      android:layout_width="250dp"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center"
-      android:layout_marginTop="16dp"
-      android:text="@string/btn_start_poll"
-      android:textSize="24sp"/>
-
-  <View
+  <android.support.constraint.ConstraintLayout
       android:layout_width="match_parent"
-      android:layout_height="1dp"
-      android:background="@android:color/darker_gray"/>
+      android:layout_height="wrap_content">
 
 
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/constraint_layout_user_info"
+        android:layout_width="321dp"
+        android:layout_height="62dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.555"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
 
+      <ImageView
+          android:id="@+id/image_view_my_presence"
+          android:layout_width="23dp"
+          android:layout_height="27dp"
+          android:layout_marginLeft="16dp"
+          android:layout_marginStart="16dp"
+          android:layout_marginTop="16dp"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          app:srcCompat="@android:drawable/presence_online"/>
+
+      <android.support.design.widget.FloatingActionButton
+          android:id="@+id/button_add_poll"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="16dp"
+          android:layout_marginRight="16dp"
+          android:layout_marginTop="14dp"
+          android:clickable="true"
+          app:fabSize="mini"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          app:srcCompat="@android:drawable/ic_input_add"/>
+
+      <TextView
+          android:id="@+id/tv_username"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="16dp"
+          android:layout_marginStart="16dp"
+          android:layout_marginTop="16dp"
+          android:textSize="24sp"
+          app:layout_constraintLeft_toRightOf="@+id/image_view_my_presence"
+          app:layout_constraintTop_toTopOf="parent"
+          tools:text="username"/>
+
+    </android.support.constraint.ConstraintLayout>
+
+
+    <!-- a simple line to divide the content -->
+    <View
+        android:id="@+id/view2"
+        android:layout_width="328dp"
+        android:layout_height="1dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraint_layout_user_info"/>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view2">
+
+      <android.support.design.widget.TabLayout
+          android:id="@+id/tab_layout_polls"
+          android:layout_width="0dp"
+          android:layout_height="48dp"
+          android:layout_marginEnd="8dp"
+          android:layout_marginLeft="8dp"
+          android:layout_marginRight="8dp"
+          android:layout_marginStart="8dp"
+          android:layout_marginTop="8dp"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toTopOf="parent">
+
+        <android.support.design.widget.TabItem
+            android:id="@+id/tab_item_all_polls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tab_item_all_polls"/>
+
+        <android.support.design.widget.TabItem
+            android:id="@+id/tab_item_invited_polls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tab_item_invited_polls"/>
+      </android.support.design.widget.TabLayout>
+
+      <android.support.constraint.ConstraintLayout
+          android:id="@+id/fragment_container_poll_list"
+          android:layout_width="320dp"
+          android:layout_height="287dp"
+          android:layout_marginLeft="0dp"
+          android:layout_marginRight="0dp"
+          android:layout_marginTop="16dp"
+          app:layout_constraintHorizontal_bias="0.506"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tab_layout_polls">
+      </android.support.constraint.ConstraintLayout>
+    </android.support.constraint.ConstraintLayout>
+
+  </android.support.constraint.ConstraintLayout>
 </LinearLayout>

@@ -2,15 +2,15 @@ package com.android.summer.csula.foodvoter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,7 +45,8 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     private FirebaseUser firebaseUser;
 
     private TextView usernameTextView;
-    private Button startPollBtn;
+
+    private ImageView userPresenceImage;
 
     private FoodVoterFirebaseDb database;
 
@@ -61,9 +62,10 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         authStateListener = setupAuthStateListener();
 
         usernameTextView = (TextView) findViewById(R.id.tv_username);
+        userPresenceImage = (ImageView) findViewById(R.id.image_view_my_presence);
 
-        startPollBtn = (Button) findViewById(R.id.btn_start_poll);
-        startPollBtn.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton addPollButton = (FloatingActionButton) findViewById(R.id.button_add_poll);
+        addPollButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 User user = new User(firebaseUser.getDisplayName(), firebaseUser.getUid(), true);
@@ -84,15 +86,15 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
-                        AuthUI.getInstance()
-                            .createSignInIntentBuilder()
-                            .setIsSmartLockEnabled(false)
-                            .setAvailableProviders(
-                                Arrays.asList(
-                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
-                            ).build(),
-                        REQUEST_CODE_SIGN_IN);
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setAvailableProviders(
+                                            Arrays.asList(
+                                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
+                                    ).build(),
+                            REQUEST_CODE_SIGN_IN);
                 }
             }
         };
@@ -120,13 +122,11 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean connected = dataSnapshot.getValue(Boolean.class);
                 if (connected) {
-                    Drawable img = getResources().getDrawable(android.R.drawable.presence_online);
-                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
+                    userPresenceImage.setImageResource(android.R.drawable.presence_online);
                     setUserOnlineStatusTo(ONLINE);
 
                 } else {
-                    Drawable img = getResources().getDrawable(android.R.drawable.presence_offline);
-                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
+                    userPresenceImage.setImageResource(android.R.drawable.presence_offline);
                     setUserOnlineStatusTo(OFFLINE);
                 }
             }
@@ -146,6 +146,10 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     private void detachDatabaseReadListener() {
         if (database != null) {
             database.detachReadListener();
+        }
+
+        if (connectedDatabaseReference != null) {
+            connectedDatabaseReference.removeEventListener(connectedValueListener);
         }
     }
 
