@@ -4,7 +4,6 @@ package com.android.summer.csula.foodvoter.adapters;
 import android.content.Context;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,24 +60,14 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
         return friends.size();
     }
 
-    // TODO: Refactor
     public void updateInvitedUser(User user) {
-        Log.d(TAG, user.toString());
-        Log.d(TAG, "friend count: " + friends.size());
         for (Invitee inv : friends) {
-            Log.d(TAG, inv.getUser().getId() + " " + user.getId());
             if (inv.getUser().getId().equals(user.getId())) {
-                Log.d(TAG, "FOUND INVITED USERS: " + user.toString());
                 inv.setInvited(true);
                 notifyDataSetChanged();
                 return;
             }
         }
-    }
-
-    public void clear() {
-        friends.clear();
-        notifyDataSetChanged();
     }
 
     public void addFriend(User user) {
@@ -94,14 +83,15 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
         private ConstraintLayout constraintLayout;
 
         private View view;
+
         public ViewHolder(View itemView) {
             super(itemView);
-
             view = itemView;
-            usernameText = (TextView) itemView.findViewById(R.id.tv_friend_username);
-            presenceImage = (ImageView) itemView.findViewById(R.id.iv_friend_presence);
-            inviteButton = (ImageButton) itemView.findViewById(R.id.image_button_invite_friend);
-            constraintLayout = (ConstraintLayout) itemView.findViewById(R.id.constraint_layout_item_friend_invitee_root);
+
+            usernameText = (TextView) view.findViewById(R.id.tv_friend_username);
+            presenceImage = (ImageView) view.findViewById(R.id.iv_friend_presence);
+            inviteButton = (ImageButton) view.findViewById(R.id.image_button_invite_friend);
+            constraintLayout = (ConstraintLayout) view.findViewById(R.id.constraint_layout_item_friend_invitee_root);
 
 
             inviteButton.setOnClickListener(new View.OnClickListener() {
@@ -110,13 +100,11 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
                     int position = getAdapterPosition();
                     Invitee invitee = friends.get(position);
                     if (!invitee.isInvited() && invitee.getUser().isOnline()) {
-                        constraintLayout.setBackgroundColor(view.getResources().getColor(R.color.colorAccent));
-                        usernameText.setTextColor(view.getResources().getColor(android.R.color.primary_text_dark));
+                        setInviteStyles();
                         invitee.setInvited(true);
                         listener.onInvite(invitee);
                     } else if (invitee.isInvited()) {
-                        constraintLayout.setBackgroundColor(view.getResources().getColor(R.color.transparent));
-                        usernameText.setTextColor(view.getResources().getColor(android.R.color.primary_text_light));
+                        setUninvitedStyles();
                         invitee.setInvited(false);
                         listener.onUninvite(invitee);
                     } else if (!invitee.getUser().isOnline()) {
@@ -137,12 +125,19 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
                 presenceImage.setImageResource(android.R.drawable.presence_offline);
             }
 
-            // TODO: Refactor
             if (friends.get(position).isInvited()) {
-                constraintLayout.setBackgroundColor(view.getResources().getColor(R.color.colorAccent));
-                usernameText.setTextColor(view.getResources().getColor(android.R.color.primary_text_dark));
-                listener.onInvite(friends.get(position));
+                setInviteStyles();
             }
+        }
+
+        private void setInviteStyles() {
+            constraintLayout.setBackgroundColor(view.getResources().getColor(R.color.colorAccent));
+            usernameText.setTextColor(view.getResources().getColor(android.R.color.primary_text_dark));
+        }
+
+        private void setUninvitedStyles() {
+            constraintLayout.setBackgroundColor(view.getResources().getColor(R.color.transparent));
+            usernameText.setTextColor(view.getResources().getColor(android.R.color.primary_text_light));
         }
     }
 }

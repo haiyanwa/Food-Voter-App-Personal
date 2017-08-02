@@ -32,15 +32,20 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
     private static final String TAG = InvitesFragment.class.getSimpleName();
     private static final String KEY_USER_ID = "userId";
     private static final String KEY_POLL_ID = "pollId";
+    private static final String NODE_POLLS = "polls";
+
+
+    private RecyclerView friendsRecyclerView;
+    private View view;
 
     private String userId;
     private String pollId;
     private FoodVoterFirebaseDb database;
-    private RecyclerView friendsRecyclerView;
     private FriendsInvitedAdapter friendsAdapter;
     private DatabaseReference pollRef;
     private List<User> invitedUsers = new ArrayList<>();
     private Poll poll;
+
 
     public static InvitesFragment newInstance(Poll poll) {
         Bundle args = new Bundle();
@@ -57,13 +62,8 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
         super.onCreate(savedInstanceState);
         userId = getArguments().getString(KEY_USER_ID);
         pollId = getArguments().getString(KEY_POLL_ID);
-
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
 
     @Override
     public void onPause() {
@@ -75,39 +75,49 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_invites, container, false);
+        view = inflater.inflate(R.layout.fragment_invites, container, false);
 
+        initializeUI();
+
+        initializeDatabase();
+
+        return view;
+    }
+
+    private void initializeUI() {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(view.getContext());
         friendsAdapter = new FriendsInvitedAdapter(this);
-
         friendsRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_friends_list);
         friendsRecyclerView.setLayoutManager(layoutManager);
         friendsRecyclerView.setAdapter(friendsAdapter);
+    }
 
+    private void initializeDatabase() {
         database = new FoodVoterFirebaseDb(this, userId);
         database.attachReadListener();
 
-        // TODO: Refactor
-        String pollId = getArguments().getString(KEY_POLL_ID);
-        Log.d(TAG, "Poll Id: " + pollId);
-        pollRef = FirebaseDatabase.getInstance().getReference().child("polls").child(pollId);
+        pollRef = FirebaseDatabase.getInstance().getReference().child(NODE_POLLS).child(pollId);
         pollRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 poll = dataSnapshot.getValue(Poll.class);
-                if (poll != null) {
-                    Log.d(TAG, poll.toString());
-                    for (User voter : poll.getVoters()) {
-                        invitedUsers.add(voter);
-                        friendsAdapter.updateInvitedUser(voter);
-                    }
+
+                if (poll == null) {
+                    return;
+                }
+
+                Log.d(TAG, "Poll: " + poll.toString());
+                for (User voter : poll.getVoters()) {
+                    invitedUsers.add(voter);
+                    // Because getting the friends and the poll are asynchronous , this operation
+                    // may be doing nothing (the adapter could still be empty as this moment)
+                    friendsAdapter.updateInvitedUser(voter);
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
-        return view;
     }
 
     @Override
@@ -116,27 +126,34 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
     @Override
     public void onUserChanged(User user) { }
 
+
     @Override
     public void onFriendAdded(User user) {
         Log.d(TAG, "friends added: " + user.toString());
+
         friendsAdapter.addFriend(user);
 
-        // TODO: Refactor
-        for (User inv : invitedUsers) {
-            if (inv.getId().equals(user.getId())) {
-                friendsAdapter.updateInvitedUser(inv);
+        /* Check if the new friend is already invited, if so update the viewHolder*/
+        for (User invitedUser : invitedUsers) {
+            if (invitedUser.getId().equals(user.getId())) {
+                friendsAdapter.updateInvitedUser(user);
+                return;
             }
         }
+
     }
 
+    // todo: update these two method so ONLY the voter field gets updated rather then the whole node
     @Override
-    public void onInvite(Invitee user) {
-        poll.addVoters(user.getUser());
+    public void onInvite(Invitee invitee) {
+        poll.addVoters(invitee.getUser());
         pollRef.setValue(poll);
     }
 
     @Override
-    public void onUninvite(Invitee user) {
-
+    public void onUninvite(Invitee invitee) {
+        // update firebase whenever a friend is invited/uninvited
+        poll.removeVoters(invitee.getUser());
+        pollRef.setValue(poll);
     }
 }

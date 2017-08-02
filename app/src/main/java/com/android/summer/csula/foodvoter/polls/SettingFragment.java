@@ -49,27 +49,24 @@ public class SettingFragment extends Fragment {
     private static final int REQUEST_CODE_LOCATION = 123;
 
     private Spinner priceSpinner;
-    private EditText title;
-    private EditText description;
     private EditText zipCode;
-    private CheckBox openNow;
-    private RadioGroup locationRadioGroup;
     private RadioButton currentLocationRadioButton;
     private RadioButton zipCodeRadioButton;
-
-    private OnPollListener onPollListener;
     private View view;
 
+    private OnPollListener onPollListener;
     private Coordinate coordinate = new Coordinate();
+
+    public SettingFragment() {}
 
 
     public static SettingFragment newInstance(Poll poll) {
         SettingFragment fragment = new SettingFragment();
-        fragment.setArguments(getPollBundle(poll));
+        fragment.setArguments(buildPollBundle(poll));
         return fragment;
     }
 
-    private static Bundle getPollBundle(Poll poll) {
+    private static Bundle buildPollBundle(Poll poll) {
         Bundle args = new Bundle();
 
         args.putString(KEY_AUTHOR_ID, poll.getAuthorId());
@@ -89,9 +86,12 @@ public class SettingFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         view = inflater.inflate(R.layout.setting_fragment, container, false);
+
+        // We need permission to obtain the users current coordinates,
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION);
 
         initializeUI();
+
         return view;
     }
 
@@ -104,19 +104,32 @@ public class SettingFragment extends Fragment {
         }
 
         Log.d(TAG, "requestCode: " + requestCode +
-                ", permission: " + Arrays.toString(permissions) +
-                ", grantedResults: " + Arrays.toString(grantResults));
+            ", permission: " + Arrays.toString(permissions) +
+            ", grantedResults: " + Arrays.toString(grantResults));
 
+
+        // Check if we can obtain the user's current coordinate
+        // if we don't have permission or if can't obtain permission,
+        // we will ask the user to manually enter their location instead
         try {
             LocationManager lm = (LocationManager) view.getContext().getSystemService(Context.LOCATION_SERVICE);
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener());
 
+            // We get the last know location, if the users moved, locationListener() will provided us
+            // with the latest coordinates.
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener());
             Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
             if (location == null) {
                 currentLocationRadioButton.setEnabled(false);
                 zipCodeRadioButton.setChecked(true);
                 Toast.makeText(view.getContext(), "I can't  access your location. Please enter it manually", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "onRequestPermissionsResult() - Location Object is null.");
+            } else {
+                Log.d(TAG, "onRequestPermissionsResult() - " + location.getLatitude() + " " + location.getLongitude());
+                coordinate.setLatitude(location.getLatitude());
+                coordinate.setLongitude(location.getLongitude());
+
+                onPollListener.onCoordinateChange(coordinate);
             }
 
         } catch (SecurityException e) {
@@ -125,6 +138,18 @@ public class SettingFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // Activity MUST implement this interface because it is used to communicated between
+        // this fragment and the host activity.
+        try {
+            onPollListener = (OnPollListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("context must implement OnPollListener");
+        }
+    }
 
     private void initializeUI() {
         setupTitle();
@@ -142,39 +167,77 @@ public class SettingFragment extends Fragment {
     }
 
     private void setupCheckbox() {
-        openNow = (CheckBox) view.findViewById(R.id.checkbox_open_now);
-        openNow.setOnCheckedChangeListener(checkBoxChangeListener());
-
+        CheckBox openNow = (CheckBox) view.findViewById(R.id.checkbox_open_now);
         boolean pollOpenNow = getArguments().getBoolean(KEY_OPEN, false);
         openNow.setChecked(pollOpenNow);
+
+        openNow.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                onPollListener.onOpenNowChange(b);
+            }
+        });
     }
 
     private void setupZipCode() {
         zipCode = (EditText) view.findViewById(R.id.edit_text_zip_code);
-        zipCode.addTextChangedListener(zipCodeTextWatcher());
-
         String pollZipCode = getArguments().getString(KEY_ZIP_CODE);
         zipCode.setText(pollZipCode);
+
+        zipCode.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                onPollListener.onZipCodeChange(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) { }
+        });
     }
 
     private void setupDescription() {
-        description = (EditText) view.findViewById(R.id.edit_text_description);
-        description.addTextChangedListener(descriptionTextWatcher());
-
+        EditText description = (EditText) view.findViewById(R.id.edit_text_description);
         String pollDescription = getArguments().getString(KEY_DESCRIPTION);
         description.setText(pollDescription);
+
+        description.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                onPollListener.onDescriptionChange(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) { }
+        });
     }
 
     private void setupTitle() {
-        title = (EditText) view.findViewById(R.id.edit_text_title);
-        title.addTextChangedListener(titleTextWatcher());
-
+        EditText title = (EditText) view.findViewById(R.id.edit_text_title);
         String pollTitle = getArguments().getString(KEY_TITLE);
         title.setText(pollTitle);
+
+        title.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                onPollListener.onTitleChange(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) { }
+        });
     }
 
     private void setupRadioGroups() {
-        locationRadioGroup = (RadioGroup) view.findViewById(R.id.radioGroup);
+        RadioGroup locationRadioGroup = (RadioGroup) view.findViewById(R.id.radioGroup);
         locationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
@@ -188,31 +251,14 @@ public class SettingFragment extends Fragment {
         });
     }
 
-    private TextWatcher zipCodeTextWatcher() {
-        return new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                onPollListener.onZipCodeChange(charSequence.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) { }
-        };
-    }
-
-
     private void setupSpinner() {
         priceSpinner = (Spinner) view.findViewById(R.id.spinners_price);
 
-        /* From Android Spinner documentation:
-         * https://developer.android.com/guide/topics/ui/controls/spinner.html */
+        /* From https://developer.android.com/guide/topics/ui/controls/spinner.html */
 
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                view.getContext(), R.array.price_array, android.R.layout.simple_spinner_item);
+            view.getContext(), R.array.price_array, android.R.layout.simple_spinner_item);
 
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -220,14 +266,22 @@ public class SettingFragment extends Fragment {
         // Apply the adapter to the spinner
         priceSpinner.setAdapter(adapter);
 
-        priceSpinner.setOnItemSelectedListener(priceSpinnerListener());
-
+        // Update the spinner position
         String pollPrice = getArguments().getString(KEY_PRICE);
         String yelpPollPrice = YelpPriceLevel.toYelpString(pollPrice);
         int yelpPollPricePosition = getSpinnerPosition(yelpPollPrice);
-
         priceSpinner.setSelection(yelpPollPricePosition);
 
+        priceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String value = adapterView.getItemAtPosition(i).toString();
+                onPollListener.onPriceChange(value);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) { }
+        });
     }
 
     private int getSpinnerPosition(String yelpPriceLevel) {
@@ -237,76 +291,17 @@ public class SettingFragment extends Fragment {
                 return i;
             }
         }
+
+        // 0 is the $ in the spinner, which is the default price in the Poll class
         return 0;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        onPollListener = (OnPollListener) context;
-    }
-
-    private TextWatcher titleTextWatcher() {
-        return new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                onPollListener.onTitleChange(charSequence.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) { }
-        };
-    }
-
-    private TextWatcher descriptionTextWatcher() {
-        return new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                onPollListener.onDescriptionChange(charSequence.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) { }
-        };
-    }
-
-
-    private CompoundButton.OnCheckedChangeListener checkBoxChangeListener() {
-        return new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                onPollListener.onOpenNowChange(b);
-            }
-        };
-    }
-
-    private AdapterView.OnItemSelectedListener priceSpinnerListener() {
-        return new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String value = adapterView.getItemAtPosition(i).toString();
-                onPollListener.onPriceChange(value);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) { }
-        };
     }
 
     private LocationListener locationListener() {
         return new LocationListener() {
             public void onLocationChanged(Location location) {
                 Log.d(TAG, "Coordinate Changed: " + coordinate.toString());
-
                 coordinate.setLatitude(location.getLongitude());
                 coordinate.setLongitude(location.getLongitude());
-
                 onPollListener.onCoordinateChange(coordinate);
             }
 
@@ -320,19 +315,5 @@ public class SettingFragment extends Fragment {
             public void onProviderDisabled(String s) { }
 
         };
-    }
-
-    public interface OnPollListener {
-        void onTitleChange(String title);
-
-        void onDescriptionChange(String description);
-
-        void onOpenNowChange(boolean openNow);
-
-        void onPriceChange(String price);
-
-        void onZipCodeChange(String zipCode);
-
-        void onCoordinateChange(Coordinate coordinate);
     }
 }
