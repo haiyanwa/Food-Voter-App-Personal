@@ -30,7 +30,7 @@ public enum YelpPriceLevel {
             case "$$$$":
                 return "4";
             default:
-                throw new InvalidParameterException("value should be a String $, $$, $$$, or $$$$");
+                throw new InvalidParameterException("value should be a String $, $$, $$$, or $$$$ but instead it is: " + yelpPriceLevel);
         }
     }
 

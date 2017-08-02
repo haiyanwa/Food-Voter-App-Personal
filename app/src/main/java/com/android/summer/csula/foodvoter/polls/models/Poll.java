@@ -3,19 +3,16 @@ package com.android.summer.csula.foodvoter.polls.models;
 
 import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
-import com.android.summer.csula.foodvoter.yelpApi.models.YelpPriceLevel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Poll {
 
-
     private static final String DEFAULT_PRICE = "1";
 
-    private String authorId;
+    private User author;
     private String pollId;
-
     private String title;
     private String description;
     private Coordinate coordinate;
@@ -33,10 +30,10 @@ public class Poll {
     public Poll() {}
 
 
-    public Poll(String authorId, String pollId) {
-        this.authorId = authorId;
+    public Poll(User user, String pollId) {
+        this.author = user;
         this.pollId = pollId;
-        voters.add(new User("DEMO", "FAKE"));
+        voters.add(author);
     }
 
     public String getTitle() {
@@ -76,7 +73,7 @@ public class Poll {
     }
 
     public void setPrice(String price) {
-        this.price = YelpPriceLevel.fromYelpString(price);
+        this.price = price;
     }
 
     public boolean isOpenNow() {
@@ -88,11 +85,7 @@ public class Poll {
     }
 
     public String getAuthorId() {
-        return authorId;
-    }
-
-    public void setAuthorId(String authorId) {
-        this.authorId = authorId;
+        return author.getId();
     }
 
     public boolean isStarted() {
@@ -137,10 +130,14 @@ public class Poll {
         this.pollId = pollId;
     }
 
+    public User getAuthor() {
+        return author;
+    }
+
     @Override
     public String toString() {
         return "Poll{" +
-                "authorId='" + authorId + '\'' +
+                "authorId='" + author.getId() + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", coordinate=" + coordinate +
@@ -151,5 +148,6 @@ public class Poll {
                 ", completed=" + completed +
                 ", voters=" + voters +
                 '}';
+
     }
 }

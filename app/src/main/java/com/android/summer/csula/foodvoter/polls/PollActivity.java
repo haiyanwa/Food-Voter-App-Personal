@@ -7,18 +7,27 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.android.summer.csula.foodvoter.R;
+import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.polls.models.Poll;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
+import com.android.summer.csula.foodvoter.yelpApi.models.YelpPriceLevel;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class PollActivity extends AppCompatActivity implements SettingFragment.OnPollListener {
 
 
-    private static final String EXTRA_USER_ID = "userId";
     private static final String TAG = PollActivity.class.getSimpleName();
+    private static final String EXTRA_USER_ID = "userId";
+    private static final String EXTRA_ONLINE = "online";
+    private static final String EXTRA_USERNAME = "username";
 
     private TabLayout tabLayout;
 
@@ -27,12 +36,17 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
 
     private FirebaseDatabase database;
     private DatabaseReference pollRef;
+    private Button submit;
+
+    boolean savePoll;
 
     public PollActivity() {}
 
-    public static Intent newIntent(Context context, String userId) {
+    public static Intent newIntent(Context context, User user) {
         Intent intent = new Intent(context, PollActivity.class);
-        intent.putExtra(EXTRA_USER_ID, userId);
+        intent.putExtra(EXTRA_USER_ID, user.getId());
+        intent.putExtra(EXTRA_ONLINE, user.isOnline());
+        intent.putExtra(EXTRA_USERNAME, user.getUsername());
         return intent;
     }
 
@@ -42,20 +56,55 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
         setContentView(R.layout.activity_poll);
 
         userId = getIntent().getStringExtra(EXTRA_USER_ID);
+        String userName = getIntent().getStringExtra(EXTRA_USERNAME);
+        boolean isOnline = getIntent().getBooleanExtra(EXTRA_ONLINE, true);
+        User user = new User(userName, userId, isOnline);
 
         database = FirebaseDatabase.getInstance();
         pollRef = database.getReference().child("polls").push();
-        poll = new Poll(userId, pollRef.getKey());
+        poll = new Poll(user, pollRef.getKey());
+
         pollRef.setValue(poll);
 
+        // TODO: Refactor
+        pollRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Poll newPoll = dataSnapshot.getValue(Poll.class);
+                if (newPoll != null) {
+                    poll = newPoll;
+                    Log.d(TAG, "POLL CHANGED: " + newPoll.toString());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         initTabLayout();
+
+        // TODO: Refactor
+        submit = (Button) findViewById(R.id.button_submit_poll);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                savePoll = true;
+                onBackPressed();
+            }
+        });
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, poll.toString());
-        pollRef.setValue(null);
+        if (savePoll) {
+            pollRef.setValue(poll);
+        } else {
+            pollRef.setValue(null);
+        }
     }
 
     private void initTabLayout() {
@@ -92,7 +141,7 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
         if (selectedTab.equals(settings)) {
             replaceFragment(SettingFragment.newInstance(poll));
         } else if (selectedTab.equals(invites)) {
-            replaceFragment(InvitesFragment.newInstance(userId));
+            replaceFragment(InvitesFragment.newInstance(poll));
         }
     }
 
@@ -121,7 +170,7 @@ public class PollActivity extends AppCompatActivity implements SettingFragment.O
 
     @Override
     public void onPriceChange(String price) {
-        poll.setPrice(price);
+        poll.setPrice(YelpPriceLevel.fromYelpString(price));
     }
 
     @Override

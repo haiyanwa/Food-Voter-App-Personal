@@ -22,6 +22,8 @@ import java.util.List;
 
 public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAdapter.ViewHolder> {
 
+    private static final String TAG = FriendsInvitedAdapter.class.getSimpleName();
+
     public interface OnInviteListener {
         void onInvite(Invitee user);
 
@@ -29,6 +31,7 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
     }
 
     private List<Invitee> friends = new ArrayList<>();
+
     private OnInviteListener listener;
 
     public FriendsInvitedAdapter(OnInviteListener listener) {
@@ -58,6 +61,21 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
         return friends.size();
     }
 
+    // TODO: Refactor
+    public void updateInvitedUser(User user) {
+        Log.d(TAG, user.toString());
+        Log.d(TAG, "friend count: " + friends.size());
+        for (Invitee inv : friends) {
+            Log.d(TAG, inv.getUser().getId() + " " + user.getId());
+            if (inv.getUser().getId().equals(user.getId())) {
+                Log.d(TAG, "FOUND INVITED USERS: " + user.toString());
+                inv.setInvited(true);
+                notifyDataSetChanged();
+                return;
+            }
+        }
+    }
+
     public void clear() {
         friends.clear();
         notifyDataSetChanged();
@@ -75,16 +93,16 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
         private ImageButton inviteButton;
         private ConstraintLayout constraintLayout;
 
+        private View view;
         public ViewHolder(View itemView) {
             super(itemView);
 
+            view = itemView;
             usernameText = (TextView) itemView.findViewById(R.id.tv_friend_username);
             presenceImage = (ImageView) itemView.findViewById(R.id.iv_friend_presence);
             inviteButton = (ImageButton) itemView.findViewById(R.id.image_button_invite_friend);
             constraintLayout = (ConstraintLayout) itemView.findViewById(R.id.constraint_layout_item_friend_invitee_root);
 
-
-            Log.d("xxx", usernameText.getCurrentTextColor() + "");
 
             inviteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -117,6 +135,13 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
                 presenceImage.setImageResource(android.R.drawable.presence_online);
             } else {
                 presenceImage.setImageResource(android.R.drawable.presence_offline);
+            }
+
+            // TODO: Refactor
+            if (friends.get(position).isInvited()) {
+                constraintLayout.setBackgroundColor(view.getResources().getColor(R.color.colorAccent));
+                usernameText.setTextColor(view.getResources().getColor(android.R.color.primary_text_dark));
+                listener.onInvite(friends.get(position));
             }
         }
     }

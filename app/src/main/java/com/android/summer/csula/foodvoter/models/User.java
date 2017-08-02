@@ -13,6 +13,11 @@ public class User {
         this.id = id;
     }
 
+    public User(String username, String id, boolean online) {
+        this(username, id);
+        this.online = online;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -44,11 +49,11 @@ public class User {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj == null) {
+        if (obj == null) {
             return false;
         }
 
-        if(!User.class.isAssignableFrom(obj.getClass())){
+        if (!User.class.isAssignableFrom(obj.getClass())) {
             return false;
         }
 

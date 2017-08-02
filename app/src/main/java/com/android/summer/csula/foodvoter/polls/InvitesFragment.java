@@ -16,22 +16,36 @@ import com.android.summer.csula.foodvoter.adapters.FriendsInvitedAdapter;
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.Invitee;
 import com.android.summer.csula.foodvoter.models.User;
+import com.android.summer.csula.foodvoter.polls.models.Poll;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Listener, FriendsInvitedAdapter.OnInviteListener {
 
-    private static final String KEY_USER_ID = "userId";
-
     private static final String TAG = InvitesFragment.class.getSimpleName();
+    private static final String KEY_USER_ID = "userId";
+    private static final String KEY_POLL_ID = "pollId";
 
     private String userId;
+    private String pollId;
     private FoodVoterFirebaseDb database;
     private RecyclerView friendsRecyclerView;
     private FriendsInvitedAdapter friendsAdapter;
+    private DatabaseReference pollRef;
+    private List<User> invitedUsers = new ArrayList<>();
+    private Poll poll;
 
-    public static InvitesFragment newInstance(String userId) {
+    public static InvitesFragment newInstance(Poll poll) {
         Bundle args = new Bundle();
-        args.putString(KEY_USER_ID, userId);
+        args.putString(KEY_USER_ID, poll.getAuthorId());
+        args.putString(KEY_POLL_ID, poll.getPollId());
         InvitesFragment fragment = new InvitesFragment();
         fragment.setArguments(args);
 
@@ -42,14 +56,13 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         userId = getArguments().getString(KEY_USER_ID);
-        Log.d(TAG, "userId: " + userId);
+        pollId = getArguments().getString(KEY_POLL_ID);
 
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        database.attachReadListener();
     }
 
     @Override
@@ -72,7 +85,28 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
         friendsRecyclerView.setAdapter(friendsAdapter);
 
         database = new FoodVoterFirebaseDb(this, userId);
+        database.attachReadListener();
 
+        // TODO: Refactor
+        String pollId = getArguments().getString(KEY_POLL_ID);
+        Log.d(TAG, "Poll Id: " + pollId);
+        pollRef = FirebaseDatabase.getInstance().getReference().child("polls").child(pollId);
+        pollRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                poll = dataSnapshot.getValue(Poll.class);
+                if (poll != null) {
+                    Log.d(TAG, poll.toString());
+                    for (User voter : poll.getVoters()) {
+                        invitedUsers.add(voter);
+                        friendsAdapter.updateInvitedUser(voter);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        });
         return view;
     }
 
@@ -86,11 +120,19 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
     public void onFriendAdded(User user) {
         Log.d(TAG, "friends added: " + user.toString());
         friendsAdapter.addFriend(user);
+
+        // TODO: Refactor
+        for (User inv : invitedUsers) {
+            if (inv.getId().equals(user.getId())) {
+                friendsAdapter.updateInvitedUser(inv);
+            }
+        }
     }
 
     @Override
     public void onInvite(Invitee user) {
-
+        poll.addVoters(user.getUser());
+        pollRef.setValue(poll);
     }
 
     @Override
