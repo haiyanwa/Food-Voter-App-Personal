@@ -1,4 +1,4 @@
-package com.android.summer.csula.foodvoter.poll;
+package com.android.summer.csula.foodvoter.polls;
 
 
 import android.os.Bundle;
