@@ -116,7 +116,7 @@ public class PollActivity extends AppCompatActivity implements
                 // Indicate the we should save the poll when onDestroy is called
                 savePoll = true;
                 // TODO: a push notification should appear that will lead all invited users to the voting Activities
-                onBackPressed();
+                finish();
             }
         });
     }

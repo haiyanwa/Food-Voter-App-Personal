@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,10 +42,9 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
-
     private DatabaseReference connectedDatabaseReference;
-
     private ValueEventListener connectedValueListener;
+    private FoodVoterFirebaseDb database;
 
     private FirebaseUser firebaseUser;
 
@@ -52,12 +52,9 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     private ImageView userPresenceImage;
     private TabLayout tabLayout;
 
-    private FoodVoterFirebaseDb database;
-
-    public HomeActivity() {}
-
 
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
@@ -69,6 +66,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
         usernameTextView = (TextView) findViewById(R.id.tv_username);
         userPresenceImage = (ImageView) findViewById(R.id.image_view_my_presence);
+        tabLayout = (TabLayout) findViewById(R.id.tab_layout_home_polls);
 
         FloatingActionButton addPollButton = (FloatingActionButton) findViewById(R.id.button_add_poll);
         addPollButton.setOnClickListener(new View.OnClickListener() {
@@ -78,6 +76,65 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
                 startActivity(PollActivity.newIntent(HomeActivity.this, user));
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume()");
+        super.onResume();
+        firebaseAuth.addAuthStateListener(authStateListener);
+        // Since the fragment data could change during onPause, we need to (re) initialized the tab
+        // layout during onResume();
+        initializeTabLayout();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause()");
+        super.onPause();
+        if (authStateListener != null) {
+            firebaseAuth.removeAuthStateListener(authStateListener);
+        }
+        detachDatabaseReadListener();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult()");
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this, "Signed in as " + getSignedInUsername(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                finish();
+            }
+        }
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.home_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        final int selectedItemId = item.getItemId();
+
+        switch (selectedItemId) {
+            case R.id.friends_menu:
+                launchFriendsActivity();
+                return true;
+            case R.id.sign_out_menu:
+                setUserOnlineStatusTo(OFFLINE);
+                AuthUI.getInstance().signOut(this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private FirebaseAuth.AuthStateListener setupAuthStateListener() {
@@ -112,7 +169,6 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         addNewUserToDatabase();
         attachDatabaseReadListener();
         attachConnectedValueListener();
-        initializeTabLayout();
     }
 
     private void initializeTabLayout() {
@@ -132,7 +188,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.fragment_container_poll_list, AllPollsFragment.newInstance())
+                .replace(R.id.fragment_container_poll_list, AllPollsFragment.newInstance())
                 .commit();
     }
 
@@ -200,59 +256,6 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        firebaseAuth.addAuthStateListener(authStateListener);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (authStateListener != null) {
-            firebaseAuth.removeAuthStateListener(authStateListener);
-        }
-        detachDatabaseReadListener();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_CODE_SIGN_IN) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Signed in as " + getSignedInUsername(), Toast.LENGTH_LONG).show();
-            } else if (resultCode == RESULT_CANCELED) {
-                finish();
-            }
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.home_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        final int selectedItemId = item.getItemId();
-
-        switch (selectedItemId) {
-            case R.id.friends_menu:
-                launchFriendsActivity();
-                return true;
-            case R.id.sign_out_menu:
-                setUserOnlineStatusTo(OFFLINE);
-                AuthUI.getInstance().signOut(this);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
     private void launchFriendsActivity() {
         String userId = firebaseUser.getUid();
         Context context = this;
@@ -278,4 +281,3 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     @Override
     public void onFriendAdded(User user) { } // Left intentionally blank
 }
-
