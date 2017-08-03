@@ -38,12 +38,12 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         rVoteRecyclerView.setHasFixedSize(true);
 
         try{
-            //rVoteAdapter = new RVoteAdapter(Restaurant.generateRestarantList(), this, this);
-            rVoteAdapter = new RVoteAdapter(DataRetriever.getRestaurants(latitude,longtitude).getBusinesses(),this,this);
+            //rVoteAdapter = new RVoteAdapter(restaurant.generateRestarantList(), this, this);
+            rVoteAdapter = new RVoteAdapter(this,DataRetriever.getRestaurants(latitude,longtitude).getBusinesses(),this,this);
 
         }catch(Exception e){
 
-            rVoteAdapter = new RVoteAdapter(null,this,this);
+            rVoteAdapter = new RVoteAdapter(this,null,this,this);
             e.printStackTrace();
             Log.d(TAG, "Error: Failed to get data for rVoteAdapter");
         }

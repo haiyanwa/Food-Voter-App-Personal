@@ -1,6 +1,7 @@
 package com.android.summer.csula.foodvoter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Category;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,9 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
     private int mNumberItems;
 
-    //private List<Restaurant> mChoiceData;
+    private final Context mContext;
+
+    //private List<restaurant> mChoiceData;
     private List<Business> mChoiceData;
 
     private final int ListItem = 0;
@@ -50,17 +54,17 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
     }
 
 
-    /**public RVoteAdapter(List<Restaurant> restaurants, ListItemClickListener listener, SwitchListener swListener) {
+    /**public RVoteAdapter(List<restaurant> restaurants, ListItemClickListener listener, SwitchListener swListener) {
         mChoiceData = restaurants;
         mOnClickListener = listener;
         switchListener = swListener;
 
     }*/
-    public RVoteAdapter(List<Business> businesses, ListItemClickListener listener, SwitchListener swListener) {
+    public RVoteAdapter(@NonNull Context context, List<Business> businesses, ListItemClickListener listener, SwitchListener swListener) {
+        mContext = context;
         mChoiceData = businesses;
         mOnClickListener = listener;
         switchListener = swListener;
-
     }
 
     @Override
@@ -130,7 +134,7 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
         public void bind(ViewHolder holder, int position){
             if(position < mChoiceData.size()){
-                //Restaurant restaurant = mChoiceData.get(position);
+                //restaurant restaurant = mChoiceData.get(position);
                 Business business = mChoiceData.get(position);
                 choiceItemView.setText(business.getName());
                 ArrayList<Category> categories = (ArrayList) business.getCategories();
@@ -140,6 +144,11 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
                 }
                 choiceDescView.setText(list);
                 choiceRatingView.setRating((float)business.getRating());
+
+                String imageUri = business.getImageUrl();
+                Picasso.with(mContext).load(imageUri).fit().centerCrop()
+                        .placeholder(R.drawable.restaurant_default_image)
+                        .into(choiceImageView);
 
                 voteSwitch.setTextOn("Yes");
                 voteSwitch.setTextOff("No");

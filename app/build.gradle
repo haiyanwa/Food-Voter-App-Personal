@@ -41,6 +41,9 @@ dependencies {
     //httpclient
     compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
     compile 'org.apache.httpcomponents:httpclient:4.5'
+
+    //for photo
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }
 
 apply plugin: 'com.google.gms.google-services'
