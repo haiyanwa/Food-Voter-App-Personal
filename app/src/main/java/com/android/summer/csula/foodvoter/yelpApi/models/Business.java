@@ -49,7 +49,7 @@ public class Business {
 
 
     /**
-     * Price level of the business. Value is one of $, $$, $$$ and $$$$.
+     * YelpPriceLevel level of the business. Value is one of $, $$, $$$ and $$$$.
      */
     private String price;
 

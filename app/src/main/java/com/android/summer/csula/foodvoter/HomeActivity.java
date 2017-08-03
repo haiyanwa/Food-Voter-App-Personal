@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
-import com.android.summer.csula.foodvoter.poll.PollActivity;
+import com.android.summer.csula.foodvoter.polls.PollActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -66,7 +66,8 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         startPollBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(PollActivity.newIntent(HomeActivity.this));
+                User user = new User(firebaseUser.getDisplayName(), firebaseUser.getUid(), true);
+                startActivity(PollActivity.newIntent(HomeActivity.this, user));
             }
         });
     }
