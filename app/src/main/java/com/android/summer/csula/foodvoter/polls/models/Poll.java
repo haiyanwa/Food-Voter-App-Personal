@@ -2,6 +2,7 @@ package com.android.summer.csula.foodvoter.polls.models;
 
 
 import com.android.summer.csula.foodvoter.models.User;
+import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
 
 import java.util.ArrayList;
@@ -27,6 +28,11 @@ public class Poll {
      * it easier to communicate between Fragments and Activities.
      */
     private List<String> voters = new ArrayList<>();
+
+    /**
+     * Random selected bossiness for voting.
+     */
+    private List<Business> businesses;
 
     /**
      * No argument constructor is for Firebase
@@ -140,6 +146,10 @@ public class Poll {
     @Override
     public int hashCode() {
         return pollId.hashCode();
+    }
+
+    public List<Business> getBusinesses() {
+        return businesses;
     }
 
     @Override
