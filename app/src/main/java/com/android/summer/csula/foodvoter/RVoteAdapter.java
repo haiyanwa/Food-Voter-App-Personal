@@ -7,12 +7,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
+import com.android.summer.csula.foodvoter.yelpApi.models.Category;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -106,13 +110,19 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         public TextView choiceItemView;
+        public ImageView choiceImageView;
+        public TextView choiceDescView;
+        public RatingBar choiceRatingView;
         public Switch voteSwitch;
         public Button voteButton;
         int index;
 
         public ViewHolder(View view){
             super(view);
-            choiceItemView = (TextView) view.findViewById(R.id.rv_choice_item);
+            choiceItemView = (TextView) view.findViewById(R.id.rv_choice_item_title);
+            choiceImageView = (ImageView) view.findViewById(R.id.rv_choice_item_image);
+            choiceDescView = (TextView) view.findViewById(R.id.rv_choice_item_desc);
+            choiceRatingView = (RatingBar) view.findViewById(R.id.rv_choice_ratingBar);
             voteSwitch = (Switch) view.findViewById(R.id.rv_vote_switch);
             voteButton = (Button) view.findViewById(R.id.rv_vote_btn);
             view.setOnClickListener(this);
@@ -123,6 +133,13 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
                 //Restaurant restaurant = mChoiceData.get(position);
                 Business business = mChoiceData.get(position);
                 choiceItemView.setText(business.getName());
+                ArrayList<Category> categories = (ArrayList) business.getCategories();
+                String list = "";
+                for(Category category : categories){
+                   list = list + " " + category.getTitle();
+                }
+                choiceDescView.setText(list);
+                choiceRatingView.setRating((float)business.getRating());
 
                 voteSwitch.setTextOn("Yes");
                 voteSwitch.setTextOff("No");
