@@ -20,4 +20,8 @@
   <string name="text_view_price_filter">Price Filter</string>
   <string name="text_view_open_now">Open Now?</string>
   <string name="text_view_invited_title"><u>Invited Friends</u></string>
+
+
+
+  <string name="text_view_friends_list_title">Tempoary so program won\'t crash</string>
 </resources>

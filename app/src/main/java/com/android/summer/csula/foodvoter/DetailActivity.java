@@ -18,6 +18,8 @@ import com.android.summer.csula.foodvoter.models.Details;
 
 
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
+import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
+import com.android.summer.csula.foodvoter.yelpApi.models.Location;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 import com.android.summer.csula.foodvoter.yelpApi.tasks.RequestYelpSearchTask;
 import com.android.volley.RequestQueue;
@@ -33,16 +35,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 public class DetailActivity extends AppCompatActivity {
 
-
-    public static Intent newIntent(Context context, Business business) {
-        Intent intent = new Intent(context, DetailActivity.class);
-
-        intent.putExtra("name", business.getName());
-
-        return intent;
-    }
-
-
+    private static final String TAG = "DetailActivity";
     //this is tempoary, will need to find a way to get data for long and lat
     static final String longitude = "34.137022";
     static final String lattitude = "-118.352266";
@@ -58,26 +51,27 @@ public class DetailActivity extends AppCompatActivity {
     String restAddress = "1000 Universal Studios Blvd #114, Universal City, CA 91608";
     String restName = "Bubba Gump Shrimp Co.";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        viewModel();
-
-        String name = getIntent().getStringExtra("name");
+        Log.d(TAG, "onCreate in DetailActivity");
 
 
+//        viewModel();
+        intentGetter();
 
-        RequestYelpSearchTask.SearchBuilder searchBuilder = new RequestYelpSearchTask.SearchBuilder();
-        searchBuilder.location("91208");
-        try {
-            Yelp yelp = RequestYelpSearchTask.execute(searchBuilder.build());
-            Log.d("xxx",  yelp.getBusinesses().size() + "");
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("xxx", "failled", e);
-        }
 
+//        RequestYelpSearchTask.SearchBuilder searchBuilder = new RequestYelpSearchTask.SearchBuilder();
+//        searchBuilder.location("91208");
+//        try {
+//            Yelp yelp = RequestYelpSearchTask.execute(searchBuilder.build());
+//            Log.d("xxx",  yelp.getBusinesses().size() + "");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Log.e("xxx", "failled", e);
+//        }
 
 
 
@@ -107,8 +101,42 @@ public class DetailActivity extends AppCompatActivity {
         };
         setImageFromUrl.execute();
 
+    }
+
+
+
+    public static Intent newIntent(Context context, Business business) {
+        Intent intent = new Intent(context, DetailActivity.class);
+        intent.putExtra("name", business.getName());
+//        intent.putExtra("categories", business.Category.getCategories)
+
+        Coordinate coordinates = business.getCoordinate();
+        intent.putExtra("latitude", coordinates.getLatitude());
+        intent.putExtra("longitutde", coordinates.getLongitude());
+
+        intent.putExtra("display_phone", business.getDisplayPhone());
+        intent.putExtra("id", business.getId());
+        intent.putExtra("image_url", business.getImageUrl());
+
+        Location location =  business.getLocation();
+
+
+
+
+
+        return intent;
+    }
+
+    public void intentGetter(){
+        String name = getIntent().getStringExtra("name");
 
     }
+
+
+
+
+
+
 
 
     public void viewModel(){
@@ -134,7 +162,6 @@ public class DetailActivity extends AppCompatActivity {
         collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
 
         collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
-
 
     }
 
