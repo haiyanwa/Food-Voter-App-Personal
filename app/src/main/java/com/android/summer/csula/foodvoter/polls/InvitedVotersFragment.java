@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Listener {
+public class InvitedVotersFragment extends Fragment implements FoodVoterFirebaseDb.Listener {
 
-    private static final String TAG = InvitesFragment.class.getSimpleName();
+    private static final String TAG = InvitedVotersFragment.class.getSimpleName();
     private static final String KEY_USER_ID = "userId";
     private static final String KEY_VOTER_ID_LIST = "voterIdList";
 
@@ -37,11 +37,11 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
     private List<String> invitedUsers = new ArrayList<>();
     private OnPollInvitesListener invitesListener;
 
-    public static InvitesFragment newInstance(Poll poll) {
+    public static InvitedVotersFragment newInstance(Poll poll) {
         Bundle args = new Bundle();
         args.putString(KEY_USER_ID, poll.getAuthorId());
         args.putStringArrayList(KEY_VOTER_ID_LIST, (ArrayList<String>) poll.getVoters());
-        InvitesFragment fragment = new InvitesFragment();
+        InvitedVotersFragment fragment = new InvitedVotersFragment();
         fragment.setArguments(args);
 
         return fragment;
@@ -70,7 +70,7 @@ public class InvitesFragment extends Fragment implements FoodVoterFirebaseDb.Lis
             invitesListener = (OnPollInvitesListener) context;
         } catch (ClassCastException e) {
             Log.e(TAG, "Host Activity need to implement the interface: "
-                + OnPollInvitesListener.class.toString(), e);
+                    + OnPollInvitesListener.class.toString(), e);
         }
     }
 

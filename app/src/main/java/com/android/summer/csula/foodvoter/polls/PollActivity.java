@@ -19,7 +19,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class PollActivity extends AppCompatActivity implements
-    SettingFragment.OnPollSettingsListener, InvitesFragment.OnPollInvitesListener {
+        SettingFragment.OnPollSettingsListener, InvitedVotersFragment.OnPollInvitesListener {
 
     private static final String TAG = PollActivity.class.getSimpleName();
     private static final String EXTRA_USER_ID = "userId";
@@ -44,15 +44,15 @@ public class PollActivity extends AppCompatActivity implements
 
     private static User getUserFromIntent(Intent intent) {
         return new User(
-            intent.getStringExtra(EXTRA_USERNAME),
-            intent.getStringExtra(EXTRA_USER_ID),
-            intent.getBooleanExtra(EXTRA_ONLINE, true));
+                intent.getStringExtra(EXTRA_USERNAME),
+                intent.getStringExtra(EXTRA_USER_ID),
+                intent.getBooleanExtra(EXTRA_ONLINE, true));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_poll);
+        setContentView(R.layout.activity_poll_configuration);
 
         user = getUserFromIntent(getIntent());
 
@@ -102,9 +102,9 @@ public class PollActivity extends AppCompatActivity implements
 
         // Use setting as the default tab, the Poll object should be mostly null values
         getSupportFragmentManager()
-            .beginTransaction()
-            .add(R.id.poll_fragment_container, SettingFragment.newInstance(poll))
-            .commit();
+                .beginTransaction()
+                .add(R.id.poll_fragment_container, SettingFragment.newInstance(poll))
+                .commit();
 
     }
 
@@ -129,15 +129,15 @@ public class PollActivity extends AppCompatActivity implements
         if (selectedTab.equals(settings)) {
             replaceFragment(SettingFragment.newInstance(poll));
         } else if (selectedTab.equals(invites)) {
-            replaceFragment(InvitesFragment.newInstance(poll));
+            replaceFragment(InvitedVotersFragment.newInstance(poll));
         }
     }
 
     private void replaceFragment(Fragment fragment) {
         getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.poll_fragment_container, fragment)
-            .commit();
+                .beginTransaction()
+                .replace(R.id.poll_fragment_container, fragment)
+                .commit();
 
     }
 

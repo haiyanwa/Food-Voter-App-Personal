@@ -1,0 +1,82 @@
+package com.android.summer.csula.foodvoter.polls;
+
+
+import android.content.Context;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.android.summer.csula.foodvoter.R;
+import com.android.summer.csula.foodvoter.polls.models.Poll;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHolder> {
+
+    private static final String TAG = PollActivity.class.getSimpleName();
+    private List<Poll> polls = new ArrayList<>();
+
+    @Override
+    public PollViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater layoutInflater = LayoutInflater.from(context);
+        int pollItemListResId = R.layout.item_poll_list;
+
+        View view = layoutInflater.inflate(pollItemListResId, parent, false);
+
+        return new PollViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(PollViewHolder holder, int position) {
+        holder.bind(position);
+    }
+
+    @Override
+    public int getItemCount() {
+        return polls.size();
+    }
+
+    public void addPoll(Poll poll) {
+        polls.add(poll);
+        notifyDataSetChanged();
+        Log.d(TAG, "poll size: " + polls.size());
+    }
+
+
+    public class PollViewHolder extends RecyclerView.ViewHolder {
+
+        private TextView title;
+        private TextView completed;
+        private TextView description;
+        private ImageView image;
+
+        public PollViewHolder(View itemView) {
+            super(itemView);
+
+            initializeView(itemView);
+        }
+
+        private void initializeView(View view) {
+            title = (TextView) view.findViewById(R.id.textview_poll_title);
+            completed = (TextView) view.findViewById(R.id.textview_completed);
+            description = (TextView) view.findViewById(R.id.textview_description);
+            image = (ImageView) view.findViewById(R.id.imageview_poll);
+        }
+
+        public void bind(int position) {
+            Poll current = polls.get(position);
+            Log.d(TAG, "current bind: " + current.toString());
+
+            title.setText(current.getTitle());
+            description.setText(current.getDescription());
+            completed.setText(current.isCompleted() ? "Completed" : "Not Completed");
+        }
+    }
+
+}
