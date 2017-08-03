@@ -18,6 +18,8 @@ import com.android.summer.csula.foodvoter.yelpApi.models.YelpPriceLevel;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.net.URL;
+
 public class PollActivity extends AppCompatActivity implements
         SettingFragment.OnPollSettingsListener, InvitedVotersFragment.OnPollInvitesListener {
 
@@ -113,10 +115,22 @@ public class PollActivity extends AppCompatActivity implements
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Indicate the we should save the poll when onDestroy is called
-                savePoll = true;
-                // TODO: a push notification should appear that will lead all invited users to the voting Activities
-                finish();
+                try {
+                    writePollToFirebase();
+                    URL url = PollUtilities.toURL(poll);
+                    Intent intent = new Intent(PollActivity.this, PollIntentService.class);
+                    intent.putExtra("url", url);
+                    intent.putExtra("pollId", poll.getPollId());
+                    startService(intent);
+                    // TODO: a push notification should appear that will lead all invited users to the voting Activities
+                    finish();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "Creating Yelp Search URL failed", e);
+                    // Remove the poll from firebase just in cae it is
+                    // written but the above operations failed
+                    pollRef.setValue(null);
+                }
             }
         });
     }

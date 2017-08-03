@@ -35,6 +35,13 @@
     </activity>
     <activity android:name=".polls.PollActivity">
     </activity>
+
+    <service
+        android:name=".polls.PollIntentService"
+        android:exported="false">
+    </service>
+
   </application>
+
 
 </manifest>

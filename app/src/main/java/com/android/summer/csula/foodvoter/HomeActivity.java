@@ -1,12 +1,15 @@
 package com.android.summer.csula.foodvoter;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -51,6 +54,8 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     private TextView usernameTextView;
     private ImageView userPresenceImage;
     private TabLayout tabLayout;
+    private PollBroadcastReceiver pollBroadcastReceiver;
+    private IntentFilter pollIntentFilter;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +81,11 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
                 startActivity(PollActivity.newIntent(HomeActivity.this, user));
             }
         });
+
+
+        pollIntentFilter = new IntentFilter(
+                PollBroadcastReceiver.UPDATE_BUSINESS_FIREBASE_COMPLETED);
+        pollBroadcastReceiver = new PollBroadcastReceiver();
     }
 
     @Override
@@ -86,6 +96,9 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         // Since the fragment data could change during onPause, we need to (re) initialized the tab
         // layout during onResume();
         initializeTabLayout();
+
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(pollBroadcastReceiver, pollIntentFilter);
     }
 
     @Override
@@ -96,6 +109,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
             firebaseAuth.removeAuthStateListener(authStateListener);
         }
         detachDatabaseReadListener();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(pollBroadcastReceiver);
     }
 
     @Override
@@ -251,7 +265,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
             database.detachReadListener();
         }
 
-        if (connectedDatabaseReference != null) {
+        if (connectedDatabaseReference != null && connectedValueListener != null) {
             connectedDatabaseReference.removeEventListener(connectedValueListener);
         }
     }
@@ -280,4 +294,21 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
     @Override
     public void onFriendAdded(User user) { } // Left intentionally blank
+
+
+    public class PollBroadcastReceiver extends BroadcastReceiver {
+        public static final String UPDATE_BUSINESS_FIREBASE_COMPLETED = "updateBusinessFirebase";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            switch (action) {
+                case UPDATE_BUSINESS_FIREBASE_COMPLETED:
+                    Toast.makeText(HomeActivity.this, "Business uploaded to firebase!",
+                            Toast.LENGTH_LONG).show();
+                    break;
+            }
+        }
+    }
 }

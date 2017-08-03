@@ -120,10 +120,9 @@ public class RequestYelpSearchTask {
             return this;
         }
 
-
         /* TODO: handle case where we can include a range of prices: $-$$$$ */
-        public SearchBuilder price(YelpPriceLevel yelpPriceLevel) {
-            this.price = yelpPriceLevel.value;
+        public SearchBuilder price(String price) {
+            this.price = price;
             return this;
         }
 
