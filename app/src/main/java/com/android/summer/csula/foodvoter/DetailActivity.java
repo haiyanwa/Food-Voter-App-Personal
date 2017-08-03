@@ -1,32 +1,47 @@
 package com.android.summer.csula.foodvoter;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
+
 import com.android.summer.csula.foodvoter.models.Details;
-import com.android.summer.csula.foodvoter.data.RestaurantDataTest_DetailsActivity;
 
 
-import com.android.summer.csula.foodvoter.R;
+import com.android.summer.csula.foodvoter.yelpApi.models.Business;
+import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
+import com.android.summer.csula.foodvoter.yelpApi.tasks.RequestYelpSearchTask;
+import com.android.volley.RequestQueue;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 
-
-
 public class DetailActivity extends AppCompatActivity {
+
+
+    public static Intent newIntent(Context context, Business business) {
+        Intent intent = new Intent(context, DetailActivity.class);
+
+        intent.putExtra("name", business.getName());
+
+        return intent;
+    }
+
 
     //this is tempoary, will need to find a way to get data for long and lat
     static final String longitude = "34.137022";
@@ -48,6 +63,23 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         viewModel();
+
+        String name = getIntent().getStringExtra("name");
+
+
+
+        RequestYelpSearchTask.SearchBuilder searchBuilder = new RequestYelpSearchTask.SearchBuilder();
+        searchBuilder.location("91208");
+        try {
+            Yelp yelp = RequestYelpSearchTask.execute(searchBuilder.build());
+            Log.d("xxx",  yelp.getBusinesses().size() + "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("xxx", "failled", e);
+        }
+
+
+
 
         AsyncTask<Void, Void, Bitmap> setImageFromUrl = new AsyncTask<Void, Void, Bitmap>(){
             @Override
@@ -74,6 +106,7 @@ public class DetailActivity extends AppCompatActivity {
             }
         };
         setImageFromUrl.execute();
+
 
     }
 
