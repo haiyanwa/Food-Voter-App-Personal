@@ -15,12 +15,11 @@ import android.widget.Toast;
 import com.android.summer.csula.foodvoter.R;
 import com.android.summer.csula.foodvoter.models.Invitee;
 import com.android.summer.csula.foodvoter.models.User;
-import com.android.summer.csula.foodvoter.polls.InvitesFragment;
+import com.android.summer.csula.foodvoter.polls.InvitedVotersFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.android.summer.csula.foodvoter.polls.InvitesFragment.*;
 
 public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAdapter.ViewHolder> {
 
@@ -29,9 +28,9 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
 
     private List<Invitee> friends = new ArrayList<>();
 
-    private OnPollInvitesListener listener;
+    private InvitedVotersFragment.OnPollInvitesListener listener;
 
-    public FriendsInvitedAdapter(OnPollInvitesListener listener) {
+    public FriendsInvitedAdapter(InvitedVotersFragment.OnPollInvitesListener listener) {
         this.listener = listener;
     }
 

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +18,8 @@ import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
+import com.android.summer.csula.foodvoter.polls.AllPollsFragment;
+import com.android.summer.csula.foodvoter.polls.InvitedPollsFragment;
 import com.android.summer.csula.foodvoter.polls.PollActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,10 +49,12 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     private FirebaseUser firebaseUser;
 
     private TextView usernameTextView;
-
     private ImageView userPresenceImage;
+    private TabLayout tabLayout;
 
     private FoodVoterFirebaseDb database;
+
+    public HomeActivity() {}
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +112,47 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         addNewUserToDatabase();
         attachDatabaseReadListener();
         attachConnectedValueListener();
+        initializeTabLayout();
+    }
+
+    private void initializeTabLayout() {
+        tabLayout = (TabLayout) findViewById(R.id.tab_layout_home_polls);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                swapFragment(tab);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) { }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) { }
+        });
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_container_poll_list, AllPollsFragment.newInstance())
+                .commit();
+    }
+
+    private void swapFragment(TabLayout.Tab tab) {
+        String selectedTab = tab.getText().toString();
+        String allTabs = getResources().getString(R.string.tab_item_all_polls);
+        String invitedTab = getResources().getString(R.string.tab_item_invited_polls);
+
+        if (selectedTab.equals(allTabs)) {
+            replaceFragment(AllPollsFragment.newInstance());
+        } else if (selectedTab.equals(invitedTab)) {
+            replaceFragment(InvitedPollsFragment.newInstance());
+        }
+    }
+
+    private void replaceFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container_poll_list, fragment)
+                .commit();
     }
 
     private void addNewUserToDatabase() {

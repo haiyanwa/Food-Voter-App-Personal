@@ -127,6 +127,22 @@ public class Poll {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Poll poll = (Poll) o;
+
+        return pollId.equals(poll.pollId);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return pollId.hashCode();
+    }
+
+    @Override
     public String toString() {
         return "Poll{" +
                 "authorId='" + author.getId() + '\'' +
