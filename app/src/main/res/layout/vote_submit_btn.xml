@@ -7,5 +7,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:id="@+id/rv_vote_btn"
-            android:text="Send my vote"/>
+            android:text="Send my vote"
+            android:onClick="sendVote"/>
 </LinearLayout>

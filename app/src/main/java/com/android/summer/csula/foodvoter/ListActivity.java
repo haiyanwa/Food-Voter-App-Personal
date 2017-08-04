@@ -8,16 +8,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
+import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
+
+import java.util.List;
 
 public class ListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Yelp>, RVoteAdapter.ListItemClickListener, RVoteAdapter.SwitchListener {
 
     private RVoteAdapter rVoteAdapter;
     private RecyclerView rVoteRecyclerView;
+    private List<Business> rChoiceData;
     private Toast mToast;
+    //private Button mSendVoteBtn;
     private final static String TAG = "ListActivity";
+
+    private Business votedBusiness;
 
     private static final int ATASK_LOADER_ID = 0;
 
@@ -29,6 +37,7 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+        //mSendVoteBtn = (Button) findViewById(R.id.rv_vote_btn);
 
         rVoteRecyclerView = (RecyclerView) findViewById(R.id.rv_vote_list);
 
@@ -38,8 +47,8 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         rVoteRecyclerView.setHasFixedSize(true);
 
         try{
-            //rVoteAdapter = new RVoteAdapter(restaurant.generateRestarantList(), this, this);
-            rVoteAdapter = new RVoteAdapter(this,DataRetriever.getRestaurants(latitude,longtitude).getBusinesses(),this,this);
+            rChoiceData = DataRetriever.getRestaurants(latitude,longtitude).getBusinesses();
+            rVoteAdapter = new RVoteAdapter(this,rChoiceData,this,this);
 
         }catch(Exception e){
 
@@ -48,7 +57,6 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
             Log.d(TAG, "Error: Failed to get data for rVoteAdapter");
         }
         rVoteRecyclerView.setAdapter(rVoteAdapter);
-
     }
 
     @Override
@@ -120,20 +128,28 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onSwitchSwiped(int swipedItemIndex, boolean swiped) {
+    public void onSwitchSwiped(Business business, boolean swiped) {
         if(mToast != null){
             mToast.cancel();
         }
         String toastMessage = "";
         if(swiped){
-            toastMessage = "Item #" + swipedItemIndex + " swipted on. ";
+            toastMessage = "Voted for " + business.getName();
         }else{
-            toastMessage = "Item #" + swipedItemIndex + " swipted off. ";
+            toastMessage = "Switched off for " + business.getName();
         }
+        votedBusiness = business;
+        Log.d(TAG, "Voted for: " + votedBusiness);
 
         mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
         mToast.show();
     }
 
+    //For SendMyVote Button
+    public void sendVote(View v){
+        String message = "Send my vote for " + votedBusiness.getName();
+        mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        mToast.show();
+    }
 
 }

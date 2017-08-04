@@ -50,7 +50,8 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
     }
 
     public interface SwitchListener{
-        void onSwitchSwiped(int swipedItemIndex, boolean swiped);
+        //void onSwitchSwiped(int swipedItemIndex, boolean swiped);
+        void onSwitchSwiped(Business swipedItem, boolean swiped);
     }
 
 
@@ -160,7 +161,7 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean swiped) {
-                        switchListener.onSwitchSwiped(index, swiped);
+                        switchListener.onSwitchSwiped(mChoiceData.get(index), swiped);
                     }
                 });
             }
