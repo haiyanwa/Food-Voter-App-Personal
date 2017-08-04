@@ -129,8 +129,9 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         mToast.show();**/
 
         Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra("name",business.getName());
-        intent.putExtra("imageUrl",business.getImageUrl());
+        String details = "name:" + business.getName() + ", imageUrl:" + business.getImageUrl() +
+                ", phone:" + business.getDisplayPhone() + ", location:" + business.getLocation();
+        intent.putExtra(intent.EXTRA_TEXT,details);
         startActivity(intent);
 
     }
