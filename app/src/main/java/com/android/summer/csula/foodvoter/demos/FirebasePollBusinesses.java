@@ -16,7 +16,7 @@ import java.util.List;
 
 public class FirebasePollBusinesses {
 
-    public static final String SELECTED_POLL_ID = "-KqbT2tF9CfQ9qrHHmHh";
+    public static final String SELECTED_POLL_ID = "-KqgcsyRFInc5Pjqq6bC";
     public static final String POLLS = "polls";
 
 

@@ -92,7 +92,7 @@ public class FriendsActivity extends AppCompatActivity implements
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
                 User friend = (User) viewHolder.itemView.getTag();
                 Log.d(TAG, "swipe friend: " + friend.toString());
-                foodVoterFirebaseDb.unfriendUser(userId, friend);
+                foodVoterFirebaseDb.unfriendUser(friend);
                 friendsAdapter.removeFriend(friend);
 
             }
@@ -107,7 +107,7 @@ public class FriendsActivity extends AppCompatActivity implements
 
     @Override
     public void unfriend(User user) {
-        foodVoterFirebaseDb.unfriendUser(userId, user);
+        foodVoterFirebaseDb.unfriendUser(user);
     }
 
     @Override

@@ -15,12 +15,9 @@ import com.google.firebase.database.ValueEventListener;
 public class FoodVoterFirebaseDb {
 
     private static final String TAG = FoodVoterFirebaseDb.class.getSimpleName();
-    private static final String KEY_USERS = "users";
-    private static final String KEY_ONLINE = "online";
     private static final String KEY_FRIENDSHIP = "friendship";
 
     private FoodVoterFirebaseDb.Listener listener;
-    private DatabaseReference usersRef;
     private DatabaseReference friendshipRef;
     private ChildEventListener userChildEventListener;
     private ChildEventListener friendsChildEventListener;
@@ -30,7 +27,6 @@ public class FoodVoterFirebaseDb {
         this.listener = listener;
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        usersRef = database.getReference().child(KEY_USERS);
         friendshipRef = database.getReference().child(KEY_FRIENDSHIP).child(userId);
     }
 
@@ -67,7 +63,7 @@ public class FoodVoterFirebaseDb {
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         };
-        usersRef.addChildEventListener(userChildEventListener);
+        UserUpdater.USERS_REFERENCE.addChildEventListener(userChildEventListener);
     }
 
     private void attachFriendsChildEventListener() {
@@ -95,7 +91,7 @@ public class FoodVoterFirebaseDb {
 
     public void detachReadListener() {
         if (userChildEventListener != null) {
-            usersRef.removeEventListener(userChildEventListener);
+            UserUpdater.USERS_REFERENCE.removeEventListener(userChildEventListener);
             userChildEventListener = null;
         }
 
@@ -104,27 +100,6 @@ public class FoodVoterFirebaseDb {
             friendsChildEventListener = null;
         }
     }
-
-    public void addNewUserToDatabase(final FirebaseUser firebaseUser) {
-        Log.d(TAG, "addNewUserToDatabase==>");
-        final String displayName = firebaseUser.getDisplayName();
-        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChild(firebaseUser.getUid())) {
-                    Log.d(TAG, displayName + " is an existing user");
-                } else {
-                    Log.d(TAG, displayName + " is a new user");
-                    User user = new User(displayName, firebaseUser.getUid());
-                    usersRef.child(firebaseUser.getUid()).setValue(user);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
-    }
-
 
     public void befriendUser(final String hostId, final User friend) {
         friendshipRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -140,11 +115,7 @@ public class FoodVoterFirebaseDb {
         });
     }
 
-    public void setUserOnlineStatus(final FirebaseUser firebaseUser, final boolean isOnline) {
-        usersRef.child(firebaseUser.getUid()).child(KEY_ONLINE).setValue(isOnline);
-    }
-
-    public void unfriendUser(final String hostId, final User friend) {
+    public void unfriendUser(final User friend) {
         friendshipRef.child(friend.getId()).removeValue();
     }
 
