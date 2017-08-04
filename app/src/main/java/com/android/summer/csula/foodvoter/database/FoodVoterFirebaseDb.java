@@ -36,58 +36,61 @@ public class FoodVoterFirebaseDb {
 
     public void attachReadListener() {
         if (userChildEventListener == null) {
-            userChildEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    User user = dataSnapshot.getValue(User.class);
-                    Log.d(TAG, "onChildAdded(): " + user.toString());
-                    listener.onUserAdded(user);
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    User user = dataSnapshot.getValue(User.class);
-                    Log.d(TAG, "onChildChanged: " + user.toString());
-                    listener.onUserChanged(user);
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) { }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) { }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) { }
-            };
-            usersRef.addChildEventListener(userChildEventListener);
+            attachUserChildEventListener();
         }
-
 
         if (friendsChildEventListener == null) {
-            friendsChildEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    User user = dataSnapshot.getValue(User.class);
-                    Log.d(TAG, "Friend child added: " + user.toString());
-                    listener.onFriendAdded(user);
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) { }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) { }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) { }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) { }
-            };
-            friendshipRef.addChildEventListener(friendsChildEventListener);
+            attachFriendsChildEventListener();
         }
+    }
 
+    private void attachUserChildEventListener() {
+        userChildEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                User user = dataSnapshot.getValue(User.class);
+                listener.onUserAdded(user);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                User user = dataSnapshot.getValue(User.class);
+                listener.onUserChanged(user);
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) { }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) { }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        };
+        usersRef.addChildEventListener(userChildEventListener);
+    }
+
+    private void attachFriendsChildEventListener() {
+        friendsChildEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                User user = dataSnapshot.getValue(User.class);
+                listener.onFriendAdded(user);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) { }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) { }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) { }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        };
+        friendshipRef.addChildEventListener(friendsChildEventListener);
     }
 
     public void detachReadListener() {
@@ -103,16 +106,17 @@ public class FoodVoterFirebaseDb {
     }
 
     public void addNewUserToDatabase(final FirebaseUser firebaseUser) {
+        Log.d(TAG, "addNewUserToDatabase==>");
+        final String displayName = firebaseUser.getDisplayName();
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "Current user id: " + firebaseUser.getUid());
                 if (dataSnapshot.hasChild(firebaseUser.getUid())) {
-                    Log.d(TAG, "existing user has log in");
+                    Log.d(TAG, displayName + " is an existing user");
                 } else {
-                    Log.d(TAG, "new user has log in; adding user to the database");
-                    usersRef.child(firebaseUser.getUid()).setValue(
-                            new User(firebaseUser.getDisplayName(), firebaseUser.getUid()));
+                    Log.d(TAG, displayName + " is a new user");
+                    User user = new User(displayName, firebaseUser.getUid());
+                    usersRef.child(firebaseUser.getUid()).setValue(user);
                 }
             }
 
@@ -137,27 +141,11 @@ public class FoodVoterFirebaseDb {
     }
 
     public void setUserOnlineStatus(final FirebaseUser firebaseUser, final boolean isOnline) {
-        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                usersRef.child(firebaseUser.getUid()).child(KEY_ONLINE).setValue(isOnline);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
+        usersRef.child(firebaseUser.getUid()).child(KEY_ONLINE).setValue(isOnline);
     }
 
     public void unfriendUser(final String hostId, final User friend) {
-        friendshipRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                friendshipRef.child(friend.getId()).removeValue();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
+        friendshipRef.child(friend.getId()).removeValue();
     }
 
     public interface Listener {
