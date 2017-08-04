@@ -4,7 +4,6 @@ package com.android.summer.csula.foodvoter.yelpApi.tasks;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
-import com.android.summer.csula.foodvoter.yelpApi.models.YelpPriceLevel;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 import com.android.summer.csula.foodvoter.yelpApi.models.YelpAccessToken;
 import com.android.summer.csula.foodvoter.yelpApi.utils.NetworkUtils;
@@ -125,11 +124,6 @@ public class RequestYelpSearchTask {
             this.longitude = longitude;
             return this;
         }
-
-
-        /* TODO: handle case where we can include a range of prices: $-$$$ */
-        public SearchBuilder price(Price price) {
-            this.price = Integer.toString(price.value);
 
         /* TODO: handle case where we can include a range of prices: $-$$$$ */
         public SearchBuilder price(String price) {

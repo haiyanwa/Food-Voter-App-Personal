@@ -48,7 +48,22 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         rVoteRecyclerView.setHasFixedSize(true);
 
         try{
+            //ToDo: remove this line when using firebase
             rChoiceData = DataRetriever.getRestaurants(latitude,longtitude).getBusinesses();
+
+            //Todo: get data from firebase
+            /**
+            FirebasePollBusinesses.execute(new FirebasePollBusinesses.OnFirebaseResultListener() {
+
+                @Override
+
+                public void onResult(List<Business> businesses) {
+
+                    rChoiceData = businesses;
+
+                }
+
+            }); */
             rVoteAdapter = new RVoteAdapter(this,rChoiceData,this,this);
 
         }catch(Exception e){
@@ -69,6 +84,8 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         getSupportLoaderManager().restartLoader(ATASK_LOADER_ID, null, this);
     }
 
+    //-----------------------------------------------------------------------------------
+    //ToDo: remove AsyncTaskLoader when we use firebase
     @Override
     public Loader<Yelp> onCreateLoader(int id, Bundle args) {
         return new AsyncTaskLoader<Yelp>(this) {
@@ -118,6 +135,7 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<Yelp> loader) {
         rVoteAdapter.swapData(null);
     }
+    // end of AsyncTaskLoader-------------------------------------------------------------------------------------
 
     @Override
     public void onListItemClick(Business business) {
