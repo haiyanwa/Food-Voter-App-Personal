@@ -15,6 +15,8 @@ public class Details {
     private String foodType;
     private String price;
     private String description;
+    private String imgURL;
+    private String url;
 
     //not sure if to use longitude for maps coordintates
     private String location;
@@ -165,6 +167,23 @@ public class Details {
 
     public void setLatitude(float latitude) {
         this.latitude = latitude;
+    }
+
+
+    public String getImgURL() {
+        return imgURL;
+    }
+
+    public void setImgURL(String imgURL) {
+        this.imgURL = imgURL;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }
 
