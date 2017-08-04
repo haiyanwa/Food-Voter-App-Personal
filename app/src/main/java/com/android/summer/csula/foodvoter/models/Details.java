@@ -48,9 +48,9 @@ public class Details {
         this.location = location;
     }
 
-    public Details(String restaurantName, String address, String phoneNumber, String foodType, String price, String description, String location, float longititude, float latitude) {
+    public Details(String Restaurant, String address, String phoneNumber, String foodType, String price, String description, String location, float longititude, float latitude) {
 
-        this.restaurantName = restaurantName;
+        this.restaurantName = Restaurant;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.foodType = foodType;

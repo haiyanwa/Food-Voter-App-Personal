@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.android.summer.csula.foodvoter.poll.PollActivity">
+    tools:context="com.android.summer.csula.foodvoter.polls.PollActivity">
 
 
   <android.support.constraint.ConstraintLayout
@@ -17,8 +17,8 @@
       android:layout_marginTop="8dp"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tab_layout_poll"
-      >
+      app:layout_constraintTop_toBottomOf="@+id/tab_layout_poll">
+
   </android.support.constraint.ConstraintLayout>
 
   <android.support.design.widget.TabLayout
@@ -60,7 +60,6 @@
       android:text="@string/button_submit"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      />
+      app:layout_constraintRight_toRightOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>

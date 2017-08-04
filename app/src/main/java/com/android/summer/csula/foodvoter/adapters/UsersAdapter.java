@@ -97,7 +97,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.ViewHolder> 
 
         public void bind(int position) {
             User user = users.get(position);
-            Log.d(TAG, "binding user: " + user.toString());
 
             usernameTextView.setText(user.getUsername());
 

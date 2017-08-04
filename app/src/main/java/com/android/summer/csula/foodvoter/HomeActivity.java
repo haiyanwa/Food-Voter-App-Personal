@@ -1,22 +1,30 @@
 package com.android.summer.csula.foodvoter;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
-import com.android.summer.csula.foodvoter.poll.PollActivity;
+import com.android.summer.csula.foodvoter.polls.AllPollsFragment;
+import com.android.summer.csula.foodvoter.polls.InvitedPollsFragment;
+import com.android.summer.csula.foodvoter.polls.PollActivity;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -37,20 +45,21 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
-
     private DatabaseReference connectedDatabaseReference;
-
     private ValueEventListener connectedValueListener;
+    private FoodVoterFirebaseDb database;
 
     private FirebaseUser firebaseUser;
 
     private TextView usernameTextView;
-    private Button startPollBtn;
-
-    private FoodVoterFirebaseDb database;
+    private ImageView userPresenceImage;
+    private TabLayout tabLayout;
+    private PollBroadcastReceiver pollBroadcastReceiver;
+    private IntentFilter pollIntentFilter;
 
 
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
@@ -61,111 +70,51 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         authStateListener = setupAuthStateListener();
 
         usernameTextView = (TextView) findViewById(R.id.tv_username);
+        userPresenceImage = (ImageView) findViewById(R.id.image_view_my_presence);
+        tabLayout = (TabLayout) findViewById(R.id.tab_layout_home_polls);
 
-        startPollBtn = (Button) findViewById(R.id.btn_start_poll);
-        startPollBtn.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton addPollButton = (FloatingActionButton) findViewById(R.id.button_add_poll);
+        addPollButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(PollActivity.newIntent(HomeActivity.this));
+                User user = new User(firebaseUser.getDisplayName(), firebaseUser.getUid(), true);
+                startActivity(PollActivity.newIntent(HomeActivity.this, user));
             }
         });
-    }
 
-    private FirebaseAuth.AuthStateListener setupAuthStateListener() {
-        return new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                firebaseUser = firebaseAuth.getCurrentUser();
 
-                if (firebaseUser != null) {
-                    onSignedInInitialized();
-                    setUserOnlineStatusTo(ONLINE);
-                } else {
-                    onSignedOutCleanup();
-                    startActivityForResult(
-                        AuthUI.getInstance()
-                            .createSignInIntentBuilder()
-                            .setIsSmartLockEnabled(false)
-                            .setAvailableProviders(
-                                Arrays.asList(
-                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
-                            ).build(),
-                        REQUEST_CODE_SIGN_IN);
-                }
-            }
-        };
-    }
-
-    private void onSignedInInitialized() {
-        database = new FoodVoterFirebaseDb(this, firebaseUser.getUid());
-        usernameTextView.setText(firebaseUser.getDisplayName());
-        addNewUserToDatabase();
-        attachDatabaseReadListener();
-        attachConnectedValueListener();
-    }
-
-    private void addNewUserToDatabase() {
-        database.addNewUserToDatabase(firebaseUser);
-    }
-
-    private void attachDatabaseReadListener() {
-        database.attachReadListener();
-    }
-
-    private void attachConnectedValueListener() {
-        connectedValueListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean connected = dataSnapshot.getValue(Boolean.class);
-                if (connected) {
-                    Drawable img = getResources().getDrawable(android.R.drawable.presence_online);
-                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
-                    setUserOnlineStatusTo(ONLINE);
-
-                } else {
-                    Drawable img = getResources().getDrawable(android.R.drawable.presence_offline);
-                    usernameTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, img, null);
-                    setUserOnlineStatusTo(OFFLINE);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        };
-        connectedDatabaseReference.addValueEventListener(connectedValueListener);
-    }
-
-    private void onSignedOutCleanup() {
-        usernameTextView.setText("");
-        detachDatabaseReadListener();
-    }
-
-    private void detachDatabaseReadListener() {
-        if (database != null) {
-            database.detachReadListener();
-        }
+        pollIntentFilter = new IntentFilter(
+                PollBroadcastReceiver.UPDATE_BUSINESS_FIREBASE_COMPLETED);
+        pollBroadcastReceiver = new PollBroadcastReceiver();
     }
 
     @Override
     protected void onResume() {
+        Log.d(TAG, "onResume()");
         super.onResume();
         firebaseAuth.addAuthStateListener(authStateListener);
+        // Since the fragment data could change during onPause, we need to (re) initialized the tab
+        // layout during onResume();
+        initializeTabLayout();
+
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(pollBroadcastReceiver, pollIntentFilter);
     }
 
     @Override
     protected void onPause() {
+        Log.d(TAG, "onPause()");
         super.onPause();
-
         if (authStateListener != null) {
             firebaseAuth.removeAuthStateListener(authStateListener);
         }
         detachDatabaseReadListener();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(pollBroadcastReceiver);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult()");
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_SIGN_IN) {
@@ -176,6 +125,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
             }
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -198,6 +148,125 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private FirebaseAuth.AuthStateListener setupAuthStateListener() {
+        return new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                firebaseUser = firebaseAuth.getCurrentUser();
+
+                if (firebaseUser != null) {
+                    onSignedInInitialized();
+                    setUserOnlineStatusTo(ONLINE);
+                } else {
+                    onSignedOutCleanup();
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setAvailableProviders(
+                                            Arrays.asList(
+                                                    new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                                                    new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
+                                    ).build(),
+                            REQUEST_CODE_SIGN_IN);
+                }
+            }
+        };
+    }
+
+    private void onSignedInInitialized() {
+        database = new FoodVoterFirebaseDb(this, firebaseUser.getUid());
+        usernameTextView.setText(firebaseUser.getDisplayName());
+        addNewUserToDatabase();
+        attachDatabaseReadListener();
+        attachConnectedValueListener();
+    }
+
+    private void initializeTabLayout() {
+        tabLayout = (TabLayout) findViewById(R.id.tab_layout_home_polls);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                swapFragment(tab);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) { }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) { }
+        });
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container_poll_list, AllPollsFragment.newInstance())
+                .commit();
+    }
+
+    private void swapFragment(TabLayout.Tab tab) {
+        String selectedTab = tab.getText().toString();
+        String allTabs = getResources().getString(R.string.tab_item_all_polls);
+        String invitedTab = getResources().getString(R.string.tab_item_invited_polls);
+
+        if (selectedTab.equals(allTabs)) {
+            replaceFragment(AllPollsFragment.newInstance());
+        } else if (selectedTab.equals(invitedTab)) {
+            replaceFragment(InvitedPollsFragment.newInstance());
+        }
+    }
+
+    private void replaceFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container_poll_list, fragment)
+                .commit();
+    }
+
+    private void addNewUserToDatabase() {
+        database.addNewUserToDatabase(firebaseUser);
+    }
+
+    private void attachDatabaseReadListener() {
+        database.attachReadListener();
+    }
+
+    private void attachConnectedValueListener() {
+        connectedValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                boolean connected = dataSnapshot.getValue(Boolean.class);
+                if (connected) {
+                    userPresenceImage.setImageResource(android.R.drawable.presence_online);
+                    setUserOnlineStatusTo(ONLINE);
+
+                } else {
+                    userPresenceImage.setImageResource(android.R.drawable.presence_offline);
+                    setUserOnlineStatusTo(OFFLINE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        };
+        connectedDatabaseReference.addValueEventListener(connectedValueListener);
+    }
+
+    private void onSignedOutCleanup() {
+        usernameTextView.setText("");
+        detachDatabaseReadListener();
+    }
+
+    private void detachDatabaseReadListener() {
+        if (database != null) {
+            database.detachReadListener();
+        }
+
+        if (connectedDatabaseReference != null && connectedValueListener != null) {
+            connectedDatabaseReference.removeEventListener(connectedValueListener);
         }
     }
 
@@ -225,5 +294,21 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
     @Override
     public void onFriendAdded(User user) { } // Left intentionally blank
-}
 
+
+    public class PollBroadcastReceiver extends BroadcastReceiver {
+        public static final String UPDATE_BUSINESS_FIREBASE_COMPLETED = "updateBusinessFirebase";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            switch (action) {
+                case UPDATE_BUSINESS_FIREBASE_COMPLETED:
+                    Toast.makeText(HomeActivity.this, "Business uploaded to firebase!",
+                            Toast.LENGTH_LONG).show();
+                    break;
+            }
+        }
+    }
+}

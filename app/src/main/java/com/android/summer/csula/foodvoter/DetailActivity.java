@@ -1,36 +1,45 @@
 package com.android.summer.csula.foodvoter;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
+
 import com.android.summer.csula.foodvoter.models.Details;
-import com.android.summer.csula.foodvoter.data.RestaurantDataTest_DetailsActivity;
 
 
-import com.android.summer.csula.foodvoter.R;
+import com.android.summer.csula.foodvoter.yelpApi.models.Business;
+import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
+import com.android.summer.csula.foodvoter.yelpApi.models.Location;
+import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
+import com.android.summer.csula.foodvoter.yelpApi.tasks.RequestYelpSearchTask;
+import com.android.volley.RequestQueue;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 
-
-
 public class DetailActivity extends AppCompatActivity {
 
+    private static final String TAG = "DetailActivity";
     //this is tempoary, will need to find a way to get data for long and lat
-    static final String longitude = "34.004507";
-    static final String lattitude = "-118.256703";
-    static final String STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=1500x300&scale=2&sensor=false";
+    static final String longitude = "34.137022";
+    static final String lattitude = "-118.352266";
+    static final String STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 //    static final String STATIC_MAP_API_ENDPOINT = "http://maps.google.com/maps/api/staticmap?center=34.004507,-118.256703&zoom=13&markers=size:mid|color:red|label:E|34.004507,-118.256703&size=1500x300&sensor=false";
 
     
@@ -38,15 +47,33 @@ public class DetailActivity extends AppCompatActivity {
     TextView phone;
     TextView address;
     Details details;
-    String phoneNumber = "323-233-1444";
-    String restAddress = "4351 S Central Ave, Los Angeles, CA 90011";
-    String restName = "Pizza Hut";
+    String phoneNumber = "(818) 753-4867";
+    String restAddress = "1000 Universal Studios Blvd #114, Universal City, CA 91608";
+    String restName = "Bubba Gump Shrimp Co.";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        viewModel();
+        Log.d(TAG, "onCreate in DetailActivity");
+
+
+//        viewModel();
+        intentGetter();
+
+
+//        RequestYelpSearchTask.SearchBuilder searchBuilder = new RequestYelpSearchTask.SearchBuilder();
+//        searchBuilder.location("91208");
+//        try {
+//            Yelp yelp = RequestYelpSearchTask.execute(searchBuilder.build());
+//            Log.d("xxx",  yelp.getBusinesses().size() + "");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Log.e("xxx", "failled", e);
+//        }
+
+
 
         AsyncTask<Void, Void, Bitmap> setImageFromUrl = new AsyncTask<Void, Void, Bitmap>(){
             @Override
@@ -77,7 +104,43 @@ public class DetailActivity extends AppCompatActivity {
     }
 
 
+
+    public static Intent newIntent(Context context, Business business) {
+        Intent intent = new Intent(context, DetailActivity.class);
+        intent.putExtra("name", business.getName());
+//        intent.putExtra("categories", business.Category.getCategories)
+
+        Coordinate coordinates = business.getCoordinate();
+        intent.putExtra("latitude", coordinates.getLatitude());
+        intent.putExtra("longitutde", coordinates.getLongitude());
+
+        intent.putExtra("display_phone", business.getDisplayPhone());
+        intent.putExtra("id", business.getId());
+        intent.putExtra("image_url", business.getImageUrl());
+
+        Location location =  business.getLocation();
+
+
+
+
+
+        return intent;
+    }
+
+    public void intentGetter(){
+        String name = getIntent().getStringExtra("name");
+
+    }
+
+
+
+
+
+
+
+
     public void viewModel(){
+
         details = new Details();
 
         phone = (TextView) findViewById(R.id.phoneNumber);
@@ -92,6 +155,13 @@ public class DetailActivity extends AppCompatActivity {
         details.setRestaurantName(restName);
         name.setText(details.getRestaurantName());
 
+        CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+        collapsingToolbar.setTitle(details.getRestaurantName());
+
+
+        collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
+
+        collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
 
     }
 
