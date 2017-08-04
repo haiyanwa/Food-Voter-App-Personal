@@ -99,12 +99,13 @@ public class FriendsInvitedAdapter extends RecyclerView.Adapter<FriendsInvitedAd
                     if (!invitee.isInvited() && invitee.getUser().isOnline()) {
                         setInviteStyles();
                         invitee.setInvited(true);
-                        listener.onUserInvited(invitee.getId());
+                        listener.onUserInvited(invitee.getUser());
                     } else if (invitee.isInvited()) {
                         setUninvitedStyles();
                         invitee.setInvited(false);
-                        listener.onUserUninvited(invitee.getId());
+                        listener.onUserUninvited(invitee.getUser());
                     } else if (!invitee.getUser().isOnline()) {
+                        // TODO: once we implement notifcation we can invited offline user
                         Toast.makeText(view.getContext(), "Can't invite User who are not log on!", Toast.LENGTH_LONG).show();
                     }
                 }

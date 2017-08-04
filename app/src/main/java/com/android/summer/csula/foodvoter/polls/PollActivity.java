@@ -24,10 +24,8 @@ public class PollActivity extends AppCompatActivity implements
         SettingFragment.OnPollSettingsListener, InvitedVotersFragment.OnPollInvitesListener {
 
     private static final String TAG = PollActivity.class.getSimpleName();
-    private static final String EXTRA_USER_ID = "userId";
-    private static final String EXTRA_ONLINE = "online";
-    private static final String EXTRA_USERNAME = "username";
     private static final String FIREBASE_NODE_POLLS = "polls";
+    private static final String EXTRA_USER = "user";
 
     private DatabaseReference pollRef;
     private User user;
@@ -38,17 +36,12 @@ public class PollActivity extends AppCompatActivity implements
 
     public static Intent newIntent(Context context, User user) {
         Intent intent = new Intent(context, PollActivity.class);
-        intent.putExtra(EXTRA_USER_ID, user.getId());
-        intent.putExtra(EXTRA_ONLINE, user.isOnline());
-        intent.putExtra(EXTRA_USERNAME, user.getUsername());
+        intent.putExtra(EXTRA_USER, user);
         return intent;
     }
 
     private static User getUserFromIntent(Intent intent) {
-        return new User(
-                intent.getStringExtra(EXTRA_USERNAME),
-                intent.getStringExtra(EXTRA_USER_ID),
-                intent.getBooleanExtra(EXTRA_ONLINE, true));
+        return (User) intent.getSerializableExtra(EXTRA_USER);
     }
 
     @Override
@@ -57,7 +50,7 @@ public class PollActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_poll_configuration);
 
         user = getUserFromIntent(getIntent());
-
+        Log.d(TAG, "onCreate => user.toString => " + user.toString());
         initializeFirebasePollReference();
 
         initializeUI();
@@ -117,6 +110,8 @@ public class PollActivity extends AppCompatActivity implements
             public void onClick(View view) {
                 try {
                     writePollToFirebase();
+                    Log.d(TAG, "onClick => author.toString => " + poll.getAuthor().toString());
+                    Log.d(TAG, "onClick => voters.toString => " + poll.getVoters().toString());
                     URL url = PollUtilities.toURL(poll);
                     Intent intent = new Intent(PollActivity.this, PollIntentService.class);
                     intent.putExtra("url", url);
@@ -202,12 +197,12 @@ public class PollActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onUserInvited(String userId) {
-        poll.addVoters(userId);
+    public void onUserInvited(User voter) {
+        poll.addVoters(voter);
     }
 
     @Override
-    public void onUserUninvited(String userId) {
-        poll.removeVoters(userId);
+    public void onUserUninvited(User voter) {
+        poll.removeVoters(voter);
     }
 }
