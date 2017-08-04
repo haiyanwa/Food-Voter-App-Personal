@@ -26,6 +26,7 @@ import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.polls.AllPollsFragment;
 import com.android.summer.csula.foodvoter.polls.InvitedPollsFragment;
 import com.android.summer.csula.foodvoter.polls.PollActivity;
+import com.android.summer.csula.foodvoter.pushNotifications.MyFirebasePreference;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -61,6 +62,8 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        Log.d(TAG, "token => " + MyFirebasePreference.getToken(this));
 
         /* Setup firebase database */
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
@@ -118,7 +121,8 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
         if (requestCode == REQUEST_CODE_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Signed in as " + firebaseUser.getDisplayName(),
+                String displayName = firebaseAuth.getCurrentUser().getDisplayName();
+                Toast.makeText(this, "Signed in as " + displayName,
                         Toast.LENGTH_LONG).show();
             } else if (resultCode == RESULT_CANCELED) {
                 finish();
@@ -226,10 +230,11 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
     /**
      * Log user online. If the user is new, add them to the database first.
+     * Update their token on login.
      */
     private void logUserOnline() {
         User authenticatedUser = new User(firebaseUser.getDisplayName(), firebaseUser.getUid());
-        UserUpdater.logUserOnline(authenticatedUser); // won't logUserOnline existing users
+        UserUpdater.logUserOnline(this, authenticatedUser); // won't logUserOnline existing users
     }
 
     private void attachDatabaseReadListener() {

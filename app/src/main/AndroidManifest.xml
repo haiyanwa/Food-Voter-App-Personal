@@ -42,6 +42,20 @@
         android:exported="false">
     </service>
 
+    <!-- https://firebase.google.com/docs/cloud-messaging/android/client  -->
+    <service
+        android:name=".pushNotifications.MyFirebaseMessagingService">
+      <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+      </intent-filter>
+    </service>
+    <service
+        android:name=".pushNotifications.MyFirebaseInstanceIDService">
+      <intent-filter>
+        <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+      </intent-filter>
+    </service>
+
   </application>
 
 
