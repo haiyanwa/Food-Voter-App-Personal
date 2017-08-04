@@ -314,9 +314,10 @@ public class SettingFragment extends Fragment {
     private LocationListener locationListener() {
         return new LocationListener() {
             public void onLocationChanged(Location location) {
-                Log.d(TAG, "Coordinate Changed: " + coordinate.toString());
+                coordinate = new Coordinate();
                 coordinate.setLatitude(location.getLongitude());
                 coordinate.setLongitude(location.getLongitude());
+                Log.d(TAG, "Coordinate Changed: " + coordinate.toString());
                 onPollSettingsListener.onCoordinateChange(coordinate);
             }
 
