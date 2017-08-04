@@ -1,5 +1,6 @@
 package com.android.summer.csula.foodvoter;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -57,6 +58,7 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
             Log.d(TAG, "Error: Failed to get data for rVoteAdapter");
         }
         rVoteRecyclerView.setAdapter(rVoteAdapter);
+
     }
 
     @Override
@@ -118,13 +120,19 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onListItemClick(int clickedItemIndex) {
-        if(mToast != null){
+    public void onListItemClick(Business business) {
+        /**if(mToast != null){
             mToast.cancel();
         }
-        String toastMessage = "Item #" + clickedItemIndex + "clicked. ";
+        String toastMessage = "Item " + business.getName() + " has been clicked.";
         mToast = Toast.makeText(this, toastMessage, Toast.LENGTH_LONG);
-        mToast.show();
+        mToast.show();**/
+
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra("name",business.getName());
+        intent.putExtra("imageUrl",business.getImageUrl());
+        startActivity(intent);
+
     }
 
     @Override

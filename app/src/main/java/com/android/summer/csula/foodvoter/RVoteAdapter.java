@@ -46,7 +46,7 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
     private String TAG = "RVoteAdapter";
 
     public interface ListItemClickListener{
-        void onListItemClick(int clickedItemIndex);
+        void onListItemClick(Business business);
     }
 
     public interface SwitchListener{
@@ -170,9 +170,9 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
         @Override
         public void onClick(View v) {
             int pos = getAdapterPosition();
-            mOnClickListener.onListItemClick(pos);
+            Business business = mChoiceData.get(pos);
+            mOnClickListener.onListItemClick(business);
         }
     }
-
 }
 
