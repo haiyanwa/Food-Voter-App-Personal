@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Category;
-import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -99,15 +98,15 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
         return mChoiceData.size() + 1;
     }
 
-    public void swapData(Yelp yelp) {
-        // check if this cursor is the same as the previous cursor
+    public void swapData(List<Business> businesses) {
+        // check if this data is the same as the previous data
         //if same then return
-        if (mChoiceData == yelp.getBusinesses()) {
+        if (mChoiceData == businesses) {
             return;
         }
         //check if this is a valid cursor, then update the cursor
-        if (yelp.getBusinesses() != null) {
-            this.mChoiceData = yelp.getBusinesses();
+        if (businesses != null) {
+            this.mChoiceData = businesses;
             this.notifyDataSetChanged();
         }
     }

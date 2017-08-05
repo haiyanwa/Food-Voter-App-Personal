@@ -2,9 +2,6 @@ package com.android.summer.csula.foodvoter;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,14 +9,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses;
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
 import com.android.summer.csula.foodvoter.yelpApi.models.Location;
-import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 
 import java.util.List;
 
-public class ListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Yelp>, RVoteAdapter.ListItemClickListener, RVoteAdapter.SwitchListener {
+public class ListActivity extends AppCompatActivity implements RVoteAdapter.ListItemClickListener, RVoteAdapter.SwitchListener {
 
     private RVoteAdapter rVoteAdapter;
     private RecyclerView rVoteRecyclerView;
@@ -51,21 +48,27 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
 
         try{
             //ToDo: remove this line when using firebase
-            rChoiceData = DataRetriever.getRestaurants(latitude,longtitude).getBusinesses();
+            //rChoiceData = DataRetriever.getRestaurants(latitude,longtitude).getBusinesses();
 
             //Todo: get data from firebase
-            /**
+
             FirebasePollBusinesses.execute(new FirebasePollBusinesses.OnFirebaseResultListener() {
 
                 @Override
 
                 public void onResult(List<Business> businesses) {
 
-                    rChoiceData = businesses;
-
+                    for(Business business : businesses){
+                        Log.d("coordinates", business.getCoordinate().toString());
+                    }
+                    if(rChoiceData == null){
+                        rChoiceData = businesses;
+                    }else{
+                        rVoteAdapter.swapData(businesses);
+                    }
                 }
 
-            }); */
+            });
             rVoteAdapter = new RVoteAdapter(this,rChoiceData,this,this);
 
         }catch(Exception e){
@@ -77,7 +80,8 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         rVoteRecyclerView.setAdapter(rVoteAdapter);
 
     }
-
+    /**
+     //-----------------------------------------------------------------------------------
     @Override
     protected void onResume() {
         super.onResume();
@@ -86,7 +90,6 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         getSupportLoaderManager().restartLoader(ATASK_LOADER_ID, null, this);
     }
 
-    //-----------------------------------------------------------------------------------
     //ToDo: remove AsyncTaskLoader when we use firebase
     @Override
     public Loader<Yelp> onCreateLoader(int id, Bundle args) {
@@ -138,7 +141,7 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         rVoteAdapter.swapData(null);
     }
     // end of AsyncTaskLoader-------------------------------------------------------------------------------------
-
+    */
     @Override
     public void onListItemClick(Business business) {
 
@@ -150,12 +153,8 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         mToast.show();**/
 
         Intent intent = new Intent(this, DetailActivity.class);
-        String details = "name:" + business.getName() + ", imageUrl:" + business.getImageUrl() +
-                ", phone:" + business.getDisplayPhone() + ", location:" + business.getLocation();
-        Log.d(TAG, "intent passed details " + details);
-        intent.putExtra(intent.EXTRA_TEXT,details);
 
-
+        Log.d(TAG, "intent passed details " + business.getCoordinate().getLatitude() + " " + business.getCoordinate().getLongitude());
 
         Location location = new Location();
         Coordinate coordinate = new Coordinate();
