@@ -43,9 +43,8 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
     }
 
     public void addPoll(Poll poll) {
-        polls.add(poll);
+        polls.add(0, poll);  // add the item to head of the list
         notifyDataSetChanged();
-        Log.d(TAG, "poll size: " + polls.size());
     }
 
 

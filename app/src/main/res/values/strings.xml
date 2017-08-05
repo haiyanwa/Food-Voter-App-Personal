@@ -24,5 +24,9 @@
   <!-- Home Activity Tabs Items -->
   <string name="tab_item_all_polls">All Polls</string>
   <string name="tab_item_invited_polls">Invited Polls</string>
+  <string name="ic_local_dinning">Picture of a utensils</string>
+  <string name="textview_completed">status incomplete</string>
+  <string name="textview_description">Description of the poll</string>
+  <string name="textview_poll_title">Title of poll</string>
 
 </resources>

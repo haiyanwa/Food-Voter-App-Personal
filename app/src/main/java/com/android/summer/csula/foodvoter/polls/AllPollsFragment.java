@@ -84,6 +84,7 @@ public class AllPollsFragment extends Fragment {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Poll poll = dataSnapshot.getValue(Poll.class);
                 pollsAdapter.addPoll(poll);
+                Log.d(TAG, "adding a new poll!: " + poll.getTitle());
             }
 
             @Override
