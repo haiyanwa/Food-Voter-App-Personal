@@ -21,12 +21,12 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
 
-
             <ImageView
-                android:id="@+id/img"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintBottom_toTopOf="@+id/restaurantName" />
+                android:layout_height="280dp"
+                android:id="@+id/imgURL"
+                android:text="http://s3-media3.fl.yelpcdn.com/bphoto/nQK-6_vZMt5n88zsAS94ew/ms.jpg" />
+
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -38,6 +38,14 @@
 
     </android.support.design.widget.AppBarLayout>
 
+
+
+
+
+
+
+
+
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -47,7 +55,93 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:paddingTop="24dp">
+            android:paddingTop="24dp"
+            android:weightSum="1">
+
+
+
+
+
+
+<!--                        CARDVIEW                -->
+
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text='"140 New Montgomery St", "Financial District","San Francisco, CA 94105"'
+                android:textAlignment="center"
+                android:textSize="12sp"
+                android:layout_weight="0.30"
+                android:autoLink="map"/>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/card_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                app:cardCornerRadius="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="5dp"
+                    android:orientation="vertical">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/phoneNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="+1-415-908-3801"
+                            android:textAlignment="center"
+                            android:textSize="14sp"
+                            android:autoLink="phone"
+                            />
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+
+            <!--                        CARDVIEW                        -->
+
+            <android.support.v7.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="272dp"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:id="@+id/img"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toTopOf="@+id/restaurantName" />
+
+
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+
+
+
 
             <!--                           CARDVIEW                                                                 -->
 
@@ -62,27 +156,46 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
+
 
 
                     <TextView
                         android:id="@+id/restaurantName"
-                        android:text="Restaurant Name"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:text="Yelp"
+                        android:textAlignment="center"
+                        android:textSize="21sp"
+                        android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/address"
-                        app:layout_constraintBottom_toTopOf="@+id/phoneNumber"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_width="144dp"
+                        android:layout_height="wrap_content"
+                        android:text=" Price: "
+                        android:textAlignment="center"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/price"
+                        android:layout_width="141dp"
+                        android:layout_height="wrap_content"
+                        android:text=" $"
+                        android:textAlignment="center"
+                        android:textSize="14sp" />
 
 
                     <TextView
-                        android:id="@+id/phoneNumber"
-                        android:text="Phone Number"
-                        app:layout_constraintTop_toBottomOf="@+id/restaurantName"
+                        android:id="@+id/rating"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:scrollHorizontally="false"
+                        android:text="2.5"
+                        android:textAllCaps="true"
+                        android:textStyle="bold|italic" />
+
+
+
                 </LinearLayout>
 
             </android.support.v7.widget.CardView>
@@ -105,39 +218,28 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-
                     <TextView
-                        android:id="@+id/name"
-                        android:text="Name: "
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:id="@+id/phone"
-                        android:text="Phone: "
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
+                        android:id="@+id/url"
+                        android:textAlignment="center"
+                        android:layout_margin="14dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Resturant Description"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/sampe_text"/>
+                        android:text="http://www.yelp.com/biz/yelp-san-francisco"
+                        app:layout_constraintTop_toBottomOf="@+id/restaurantName"
+                        android:autoLink="web"
+                        android:linksClickable="true"/>
 
                 </LinearLayout>
 
             </android.support.v7.widget.CardView>
 
 
+
             <!--                           CARDVIEW                                                                 -->
 
-
-
         </LinearLayout>
+
+
 
     </android.support.v4.widget.NestedScrollView>
 
