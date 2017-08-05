@@ -4,25 +4,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.util.Linkify;
 import android.util.Log;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.android.summer.csula.foodvoter.models.Details;
 
 
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
-import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
-import com.android.summer.csula.foodvoter.yelpApi.models.Location;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 import com.android.summer.csula.foodvoter.yelpApi.tasks.RequestYelpSearchTask;
 import com.android.volley.RequestQueue;
+import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,44 +38,93 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 
 public class DetailActivity extends AppCompatActivity {
+    public TextView mName, mPhone, mAddress, mUrl, mPrice;
+    public ImageView mImageURL;
+    public RatingBar mRating;
+    public CheckBox mCheckBox$, mCheckBox$$, mCheckBox$$$, mCheckBox$$$$;
+    public String price;
 
-    private static final String TAG = "DetailActivity";
+    Business mBusiness;
+
+
     //this is tempoary, will need to find a way to get data for long and lat
-    static final String longitude = "34.137022";
-    static final String lattitude = "-118.352266";
-    static final String STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
+    String MAP_API_ENDPOINT;
+
+//    public String STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 //    static final String STATIC_MAP_API_ENDPOINT = "http://maps.google.com/maps/api/staticmap?center=34.004507,-118.256703&zoom=13&markers=size:mid|color:red|label:E|34.004507,-118.256703&size=1500x300&sensor=false";
 
-    
-    TextView name;
-    TextView phone;
-    TextView address;
-    Details details;
-    String phoneNumber = "(818) 753-4867";
-    String restAddress = "1000 Universal Studios Blvd #114, Universal City, CA 91608";
-    String restName = "Bubba Gump Shrimp Co.";
 
+//
+//    public static Intent newIntent(Context context, Business business) {
+//        Intent intent = new Intent(context, DetailActivity.class);
+//        intent.putExtra("name", business.getName());
+//        intent.putExtra("display_phone", business.getName());
+//        intent.putExtra("display_address", business.getName());
+//        return intent;
+//    }
+
+
+//    Intent intent = getIntent();
+//    Bundle bundle = intent.getExtras();
+//    String filter = bundle.getString("filter");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        Log.d(TAG, "onCreate in DetailActivity");
+
+//        mPrice = (TextView) findViewById(R.id.price);
+        mName = (TextView) findViewById(R.id.restaurantName);
+        mPhone = (TextView) findViewById(R.id.phoneNumber);
+        mUrl = (TextView) findViewById(R.id.url);
+        mAddress = (TextView) findViewById(R.id.address);
+        mRating = (RatingBar) findViewById(R.id.ratingsBar);
 
 
-//        viewModel();
-        intentGetter();
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if(bundle!=null){
+            String rest_Name = bundle.getString("name");
+            String phone_number = bundle.getString("display_phone");
+            String image_url = bundle.getString("image_url");
+            String url = bundle.getString("url");
+            String address = bundle.getString("display_address");
+            String ratings = bundle.getString("ratings");
+            String longitude = bundle.getString("longitude");
+            String latitude = bundle.getString("latitude");
+
+            mName.setText(rest_Name);
+            mPhone.setText(phone_number);
+            mAddress.setText(address);
+            mRating.setRating(Float.parseFloat(ratings));
+//            mPrice.setText(price);
 
 
-//        RequestYelpSearchTask.SearchBuilder searchBuilder = new RequestYelpSearchTask.SearchBuilder();
-//        searchBuilder.location("91208");
-//        try {
-//            Yelp yelp = RequestYelpSearchTask.execute(searchBuilder.build());
-//            Log.d("xxx",  yelp.getBusinesses().size() + "");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            Log.e("xxx", "failled", e);
-//        }
+            price = bundle.getString("price");
+            CheckboxChecking(price);
+
+            mUrl.setText(url);
+            Linkify.addLinks(mUrl, Linkify.WEB_URLS);
+
+            ImageView mImgURL = (ImageView) findViewById(R.id.imgURL);
+            Picasso.with(this)
+                    .load(image_url)
+                    .into(mImgURL);
+
+
+
+            MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+latitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
+
+            //setting Rest Name for collapsingToolbar
+            CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+            collapsingToolbar.setTitle(rest_Name);
+            collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
+            collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
+        }
+
+        if (bundle == null){
+                    viewModel();
+        }
 
 
 
@@ -80,7 +133,7 @@ public class DetailActivity extends AppCompatActivity {
             protected Bitmap doInBackground(Void... params) {
                 Bitmap bmp = null;
                 HttpClient httpclient = new DefaultHttpClient();
-                HttpGet request = new HttpGet(STATIC_MAP_API_ENDPOINT);
+                HttpGet request = new HttpGet(MAP_API_ENDPOINT);
 
                 InputStream in = null;
                 try {
@@ -103,68 +156,70 @@ public class DetailActivity extends AppCompatActivity {
 
     }
 
+    public void CheckboxChecking(String price){
+        mCheckBox$ = (CheckBox) findViewById(R.id.$);
+        mCheckBox$$ = (CheckBox) findViewById(R.id.$$);
+        mCheckBox$$$ = (CheckBox) findViewById(R.id.$$$);
+        mCheckBox$$$$ = (CheckBox) findViewById(R.id.$$$$);
 
-
-    public static Intent newIntent(Context context, Business business) {
-        Intent intent = new Intent(context, DetailActivity.class);
-        intent.putExtra("name", business.getName());
-//        intent.putExtra("categories", business.Category.getCategories)
-
-        Coordinate coordinates = business.getCoordinate();
-        intent.putExtra("latitude", coordinates.getLatitude());
-        intent.putExtra("longitutde", coordinates.getLongitude());
-
-        intent.putExtra("display_phone", business.getDisplayPhone());
-        intent.putExtra("id", business.getId());
-        intent.putExtra("image_url", business.getImageUrl());
-
-        Location location =  business.getLocation();
-
-
-
-
-
-        return intent;
-    }
-
-    public void intentGetter(){
-        String name = getIntent().getStringExtra("name");
-
+        if (price.equals("$$$$")){
+            mCheckBox$$$$.setChecked(true);;
+        }
+        else if (price.equals("$$$")){
+            mCheckBox$$$.setChecked(true);
+        }
+        else if (price.equals("$$")){
+            mCheckBox$$.setChecked(true);
+        }
+        else{
+            mCheckBox$.setChecked(true);
+        }
     }
 
 
-
-
-
-
-
-
+//method for testing view
     public void viewModel(){
+        Details details = new Details();
+        String longitude = "34.137022";
+        String latitude = "-118.352266";
 
-        details = new Details();
+        String phoneNumber = "(818) 753-4867";
+        String restAddress = "1000 Universal Studios Blvd #114, Universal City, CA 91608";
+        String restName = "Bubba Gump Shrimp Co.";
+        mUrl = (TextView) findViewById(R.id.url);
+        mUrl.setText("http://www.yelp.com/biz/yelp-san-francisco");
+        Linkify.addLinks(mUrl, Linkify.WEB_URLS);
 
-        phone = (TextView) findViewById(R.id.phoneNumber);
+
+        mPhone = (TextView) findViewById(R.id.phoneNumber);
         details.setPhoneNumber(phoneNumber);
-        phone.setText(details.getPhoneNumber());
+        mPhone.setText(details.getPhoneNumber());
 
-        address = (TextView) findViewById(R.id.address);
-        details.setAddress(restAddress);
-        address.setText(details.getAddress());
+        mAddress = (TextView) findViewById(R.id.address);
+        details.setAddress("140 New Montgomery St Financial District San Francisco, CA 94105");
+        mAddress.setText(details.getAddress());
 
-        name = (TextView) findViewById(R.id.restaurantName);
+
+        mName = (TextView) findViewById(R.id.restaurantName);
         details.setRestaurantName(restName);
-        name.setText(details.getRestaurantName());
+        mName.setText(details.getRestaurantName());
+        mName.setVisibility(View.INVISIBLE);
 
+        mImageURL = (ImageView) findViewById(R.id.imgURL);
+        details.setImgURL("http://s3-media3.fl.yelpcdn.com/bphoto/nQK-6_vZMt5n88zsAS94ew/o.jpg");
+        Picasso.with(this)
+                .load(details.getImgURL())
+                .into(mImageURL);
+
+         MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+latitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
+
+        //setting Rest Name
         CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         collapsingToolbar.setTitle(details.getRestaurantName());
 
-
         collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
-
         collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
-
     }
-
 
 
 

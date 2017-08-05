@@ -18,6 +18,7 @@ import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.polls.models.Poll;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,22 +26,24 @@ import java.util.List;
 public class InvitedVotersFragment extends Fragment implements FoodVoterFirebaseDb.Listener {
 
     private static final String TAG = InvitedVotersFragment.class.getSimpleName();
-    private static final String KEY_USER_ID = "userId";
-    private static final String KEY_VOTER_ID_LIST = "voterIdList";
-
+    private static final String KEY_AUTHOR = "author";
+    private static final String KEY_VOTERS = "voters";
 
     private View view;
 
-    private String userId;
+    private User author;
     private FoodVoterFirebaseDb database;
     private FriendsInvitedAdapter friendsAdapter;
-    private List<String> invitedUsers = new ArrayList<>();
+    private List<User> voters = new ArrayList<>();
     private OnPollInvitesListener invitesListener;
 
     public static InvitedVotersFragment newInstance(Poll poll) {
         Bundle args = new Bundle();
-        args.putString(KEY_USER_ID, poll.getAuthorId());
-        args.putStringArrayList(KEY_VOTER_ID_LIST, (ArrayList<String>) poll.getVoters());
+        args.putSerializable(KEY_AUTHOR, poll.getAuthor());
+        // Poll#getVoters return an ArrayList; All standard implementations of
+        // java.util.List already implement java.io.Serializable, so it should be safe to cast
+        // https://stackoverflow.com/questions/1387954/how-to-serialize-a-list-in-java
+        args.putSerializable(KEY_VOTERS, (Serializable) poll.getVoters());
         InvitedVotersFragment fragment = new InvitedVotersFragment();
         fragment.setArguments(args);
 
@@ -50,8 +53,11 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        userId = getArguments().getString(KEY_USER_ID);
-        invitedUsers = getArguments().getStringArrayList(KEY_VOTER_ID_LIST);
+        author = (User) getArguments().getSerializable(KEY_AUTHOR);
+        voters = (List<User>) getArguments().getSerializable(KEY_VOTERS);
+
+        Log.d(TAG, "onCreate => user.toString => " + author.toString());
+        Log.d(TAG, "onCreate => voters.toString => " + voters.toString());
     }
 
 
@@ -96,7 +102,7 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
     }
 
     private void initializeDatabase() {
-        database = new FoodVoterFirebaseDb(this, userId);
+        database = new FoodVoterFirebaseDb(this, author.getId());
         database.attachReadListener();
     }
 
@@ -114,8 +120,8 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
         friendsAdapter.addFriend(user);
 
         /* Check if the new friend is already invited, if so update the viewHolder*/
-        for (String invitedUser : invitedUsers) {
-            if (invitedUser.equals(user.getId())) {
+        for (User voter: voters) {
+            if (voter.equals(user)) {
                 friendsAdapter.updateInvitedUser(user);
                 return;
             }
@@ -129,8 +135,8 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
      */
     public interface OnPollInvitesListener {
 
-        void onUserInvited(String userId);
+        void onUserInvited(User voter);
 
-        void onUserUninvited(String userId);
+        void onUserUninvited(User voter);
     }
 }

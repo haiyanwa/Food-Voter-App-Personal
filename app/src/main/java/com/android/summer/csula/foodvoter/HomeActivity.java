@@ -21,10 +21,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
+import com.android.summer.csula.foodvoter.database.UserUpdater;
 import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.polls.AllPollsFragment;
 import com.android.summer.csula.foodvoter.polls.InvitedPollsFragment;
 import com.android.summer.csula.foodvoter.polls.PollActivity;
+import com.android.summer.csula.foodvoter.pushNotifications.MyFirebasePreference;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,8 +42,6 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
     private static final String TAG = HomeActivity.class.getSimpleName();
     private static final int REQUEST_CODE_SIGN_IN = 1;
-    private static final boolean ONLINE = true;
-    private static final boolean OFFLINE = false;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
@@ -63,6 +63,8 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        Log.d(TAG, "token => " + MyFirebasePreference.getToken(this));
+
         /* Setup firebase database */
         connectedDatabaseReference = FirebaseDatabase.getInstance().getReference(".info/connected");
 
@@ -78,6 +80,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
             @Override
             public void onClick(View view) {
                 User user = new User(firebaseUser.getDisplayName(), firebaseUser.getUid(), true);
+                user.setToken(MyFirebasePreference.getToken(HomeActivity.this));
                 startActivity(PollActivity.newIntent(HomeActivity.this, user));
             }
         });
@@ -119,7 +122,9 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
         if (requestCode == REQUEST_CODE_SIGN_IN) {
             if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Signed in as " + getSignedInUsername(), Toast.LENGTH_LONG).show();
+                String displayName = firebaseAuth.getCurrentUser().getDisplayName();
+                Toast.makeText(this, "Signed in as " + displayName,
+                        Toast.LENGTH_LONG).show();
             } else if (resultCode == RESULT_CANCELED) {
                 finish();
             }
@@ -143,7 +148,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
                 launchFriendsActivity();
                 return true;
             case R.id.sign_out_menu:
-                setUserOnlineStatusTo(OFFLINE);
+                setUserOnlineStatus(false);
                 AuthUI.getInstance().signOut(this);
                 return true;
             default:
@@ -159,7 +164,6 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
 
                 if (firebaseUser != null) {
                     onSignedInInitialized();
-                    setUserOnlineStatusTo(ONLINE);
                 } else {
                     onSignedOutCleanup();
                     startActivityForResult(
@@ -180,7 +184,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     private void onSignedInInitialized() {
         database = new FoodVoterFirebaseDb(this, firebaseUser.getUid());
         usernameTextView.setText(firebaseUser.getDisplayName());
-        addNewUserToDatabase();
+        logUserOnline();
         attachDatabaseReadListener();
         attachConnectedValueListener();
     }
@@ -225,8 +229,13 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
                 .commit();
     }
 
-    private void addNewUserToDatabase() {
-        database.addNewUserToDatabase(firebaseUser);
+    /**
+     * Log user online. If the user is new, add them to the database first.
+     * Update their token on login.
+     */
+    private void logUserOnline() {
+        User authenticatedUser = new User(firebaseUser.getDisplayName(), firebaseUser.getUid());
+        UserUpdater.logUserOnline(this, authenticatedUser); // won't logUserOnline existing users
     }
 
     private void attachDatabaseReadListener() {
@@ -237,15 +246,15 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         connectedValueListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean connected = dataSnapshot.getValue(Boolean.class);
-                if (connected) {
-                    userPresenceImage.setImageResource(android.R.drawable.presence_online);
-                    setUserOnlineStatusTo(ONLINE);
+                boolean isConnected = dataSnapshot.getValue(Boolean.class);
 
+                if (isConnected) {
+                    userPresenceImage.setImageResource(android.R.drawable.presence_online);
                 } else {
                     userPresenceImage.setImageResource(android.R.drawable.presence_offline);
-                    setUserOnlineStatusTo(OFFLINE);
                 }
+
+                setUserOnlineStatus(isConnected);
             }
 
             @Override
@@ -277,14 +286,9 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         startActivity(friendsIntent);
     }
 
-    private String getSignedInUsername() {
-        return firebaseAuth.getCurrentUser().getDisplayName();
+    private void setUserOnlineStatus(final boolean isOnline) {
+        UserUpdater.updateOnlineStatus(firebaseUser.getUid(), isOnline);
     }
-
-    private void setUserOnlineStatusTo(final boolean isOnline) {
-        database.setUserOnlineStatus(firebaseUser, isOnline);
-    }
-
 
     @Override
     public void onUserAdded(User user) { } // Left intentionally blank
