@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -37,9 +38,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 
 public class DetailActivity extends AppCompatActivity {
-    public TextView mName, mPhone, mAddress, mUrl;
+    public TextView mName, mPhone, mAddress, mUrl, mPrice;
     public ImageView mImageURL;
     public RatingBar mRating;
+    public CheckBox mCheckBox$, mCheckBox$$, mCheckBox$$$, mCheckBox$$$$;
+    public String price;
     Details details;
     Business mBusiness;
     String phoneNumber = "(818) 753-4867";
@@ -74,6 +77,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
+//        mPrice = (TextView) findViewById(R.id.price);
         mName = (TextView) findViewById(R.id.restaurantName);
         mPhone = (TextView) findViewById(R.id.phoneNumber);
         mUrl = (TextView) findViewById(R.id.url);
@@ -90,33 +94,23 @@ public class DetailActivity extends AppCompatActivity {
             String url = bundle.getString("url");
             String address = bundle.getString("display_address");
             String ratings = bundle.getString("ratings");
-//            Float ratings = Float.valueOf(bundle.getString("ratings"));
-//            mBusiness.rate_bar.setRating(Float.parseFloat("2.0"));(ratings);
-            longitude = bundle.getString("lon");
-            lattitude = bundle.getString("lat");
-            STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
-
-
-//            mRating.setRating(Float.parseFloat("2.0"));
 
             mName.setText(rest_Name);
             mPhone.setText(phone_number);
             mAddress.setText(address);
             mRating.setRating(Float.parseFloat(ratings));
-//            mRating.setRating((float)mBusiness.getRating());
-//            mRating.setRating(Float.valueOf(ratings));
-//            mRating.setRating(Float.parseFloat("2.0"));
+//            mPrice.setText(price);
+
+
+            price = bundle.getString("price");
+            CheckboxChecking(price);
 
             mUrl.setText(url);
             Linkify.addLinks(mUrl, Linkify.WEB_URLS);
 
-
-//            ratedValue = String.valueOf(ratingBar.getRating());
-
-//            mRating.setRating(Float.valueOf(ratings));
-
-
-
+            longitude = bundle.getString("lon");
+            lattitude = bundle.getString("lat");
+            STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 
 
 
@@ -180,6 +174,26 @@ public class DetailActivity extends AppCompatActivity {
         setImageFromUrl.execute();
 
 
+    }
+
+    public void CheckboxChecking(String price){
+        mCheckBox$ = (CheckBox) findViewById(R.id.$);
+        mCheckBox$$ = (CheckBox) findViewById(R.id.$$);
+        mCheckBox$$$ = (CheckBox) findViewById(R.id.$$$);
+        mCheckBox$$$$ = (CheckBox) findViewById(R.id.$$$$);
+
+        if (price.equals("$$$$")){
+            mCheckBox$$$$.setChecked(true);;
+        }
+        else if (price.equals("$$$")){
+            mCheckBox$$$.setChecked(true);
+        }
+        else if (price.equals("$$")){
+            mCheckBox$$.setChecked(true);
+        }
+        else{
+            mCheckBox$.setChecked(true);
+        }
     }
 
 

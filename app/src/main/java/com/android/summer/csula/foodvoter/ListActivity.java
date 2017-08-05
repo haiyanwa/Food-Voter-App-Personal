@@ -170,14 +170,14 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         intent.putExtra("url", business.getUrl());
         intent.putExtra("display_address", address);
         intent.putExtra("ratings", rating);
+        intent.putExtra("price", business.getPrice());
 
         intent.putExtra("latitude", String.valueOf(coordinate.getLatitude()));
         intent.putExtra("longtitude", String.valueOf( coordinate.getLatitude()));
 
 
 
-
-        Log.d("ppp", String.valueOf(business.getRating()));
+        Log.d("ppp", (business.getPrice()));
 //        Log.d("ppp", String.valueOf(lon));
 
         startActivity(intent);
