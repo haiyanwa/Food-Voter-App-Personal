@@ -4,7 +4,7 @@ admin.initializeApp(functions.config().firebase);
 
 
 // Keep TTL short for demonstration purposes
-const TIME_TO_LIVE = 5;
+const TIME_TO_LIVE = 60; // 60 seconds thus 1 minute
 
 // Send a Heads-Up Notification to all the invited voters whenever
 // a poll is created
@@ -34,7 +34,7 @@ exports.messageVoters = functions.database.ref("/polls/{id}/voters")
 
             const options = {
               priority  : "high",
-              timeToLive:  TIME_TO_LIVE      //  in seconds
+              timeToLive: TIME_TO_LIVE      //  in seconds
             };
 
             // obtain the token for each voter and send them the payload
@@ -42,7 +42,9 @@ exports.messageVoters = functions.database.ref("/polls/{id}/voters")
                 .then(dataSnapshot => {
                   dataSnapshot.forEach(child => {
                     const voter = child.val();
-                    console.log(`title: ${poll.title}, voter: ${voter.username}`);
+                    console.log(`title: ${poll.title}`);
+                    console.log(`voter: ${voter.username}`);
+                    console.log(`token: ${voter.token}`);
                     admin.messaging().sendToDevice(voter.token, payload, options);
                   });
                 })

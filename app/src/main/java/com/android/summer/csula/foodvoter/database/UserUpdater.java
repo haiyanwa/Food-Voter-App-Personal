@@ -83,6 +83,30 @@ public class UserUpdater {
         });
     }
 
+
+    public static void updateFriendToken(final String hostId, final String friendId, final String friendToken) {
+        final DatabaseReference myFriendshipRef = FirebaseDatabase.getInstance()
+                .getReference()
+                .child("friendship")
+                .child(hostId);
+
+        myFriendshipRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.hasChild(friendId)) {
+                    Log.d(TAG, "updating user: " + hostId + " 's friend: " + friendId + " 's token to " + friendToken);
+                    myFriendshipRef
+                            .child(friendId)
+                            .child("token")
+                            .setValue(friendToken);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        });
+    }
+
     private static DatabaseReference getUserRef() {
         return FirebaseDatabase.getInstance().getReference().child("users");
     }
