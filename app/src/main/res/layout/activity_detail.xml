@@ -184,16 +184,22 @@
                         android:textSize="14sp" />
 
 
-                    <TextView
-                        android:id="@+id/rating"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:scrollHorizontally="false"
-                        android:text="2.5"
-                        android:textAllCaps="true"
-                        android:textStyle="bold|italic" />
+                    <!--<TextView-->
+                        <!--android:id="@+id/rating"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:layout_alignParentRight="true"-->
+                        <!--android:scrollHorizontally="false"-->
+                        <!--android:text="2.5"-->
+                        <!--android:textAllCaps="true"-->
+                        <!--android:textStyle="bold|italic" />-->
 
+                    <RatingBar
+                        android:id="@+id/ratingsBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginTop="0dp" />
 
 
                 </LinearLayout>
