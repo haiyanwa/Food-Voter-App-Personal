@@ -72,7 +72,7 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-//        viewModel();
+
         mName = (TextView) findViewById(R.id.restaurantName);
         mPhone = (TextView) findViewById(R.id.phoneNumber);
         mUrl = (TextView) findViewById(R.id.url);
@@ -81,7 +81,7 @@ public class DetailActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-//        if(bundle!=null){
+        if(bundle!=null){
             String rest_Name = bundle.getString("name");
             String phone_number = bundle.getString("display_phone");
             String image_url = bundle.getString("image_url");
@@ -116,7 +116,10 @@ public class DetailActivity extends AppCompatActivity {
             collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
             collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
 
-//        }
+        }
+        if (bundle == null){
+                    viewModel();
+        }
 
 
 
@@ -195,6 +198,8 @@ public class DetailActivity extends AppCompatActivity {
         Picasso.with(this)
                 .load(details.getImgURL())
                 .into(mImageURL);
+
+         STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 
         //setting Rest Name
         CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
