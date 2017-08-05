@@ -162,22 +162,18 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
         location = business.getLocation();
         coordinate = business.getCoordinate();
         String address = location.getDisplayAddress().toString().substring(1,(location.getDisplayAddress().toString().length())-1);
-        double lat = coordinate.getLatitude();
-        double lon = coordinate.getLatitude();
-
-
         intent.putExtra("display_phone", business.getDisplayPhone());
         intent.putExtra("name", business.getName());
         intent.putExtra("image_url", business.getImageUrl());
         intent.putExtra("url", business.getUrl());
         intent.putExtra("display_address", address);
-        intent.putExtra("latitude", String.valueOf(lat));
-        intent.putExtra("longtitude", String.valueOf(lon));
+        intent.putExtra("latitude", String.valueOf(coordinate.getLatitude()));
+        intent.putExtra("longtitude", String.valueOf( coordinate.getLatitude()));
 
 
 
-        Log.d("ppp", String.valueOf(lat));
-        Log.d("ppp", String.valueOf(lon));
+//        Log.d("ttt", String.valueOf(lat));
+//        Log.d("ttt", String.valueOf(lon));
 
         startActivity(intent);
 
