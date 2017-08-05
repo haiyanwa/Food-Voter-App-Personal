@@ -3,6 +3,9 @@ const admin     = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
 
+// Keep TTL short for demonstration purposes
+const TIME_TO_LIVE = 5;
+
 // Send a Heads-Up Notification to all the invited voters whenever
 // a poll is created
 exports.messageVoters = functions.database.ref("/polls/{id}/voters")
@@ -31,7 +34,7 @@ exports.messageVoters = functions.database.ref("/polls/{id}/voters")
 
             const options = {
               priority  : "high",
-              timeToLive:  30      //  in seconds
+              timeToLive:  TIME_TO_LIVE      //  in seconds
             };
 
             // obtain the token for each voter and send them the payload

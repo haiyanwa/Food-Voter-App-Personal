@@ -69,7 +69,7 @@ public class AllPollsFragment extends Fragment {
     }
 
     private void initializeRecyclerView(View view) {
-        pollsAdapter = new PollsAdapter();
+        pollsAdapter = new PollsAdapter(false);
 
         LayoutManager layoutManager = new LinearLayoutManager(view.getContext());
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_all_polls);
