@@ -80,6 +80,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
             @Override
             public void onClick(View view) {
                 User user = new User(firebaseUser.getDisplayName(), firebaseUser.getUid(), true);
+                user.setToken(MyFirebasePreference.getToken(HomeActivity.this));
                 startActivity(PollActivity.newIntent(HomeActivity.this, user));
             }
         });

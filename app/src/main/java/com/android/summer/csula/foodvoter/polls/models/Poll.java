@@ -23,11 +23,7 @@ public class Poll {
 
     private boolean completed;
 
-    /**
-     * List of User's id. A List of strings will keep Firebase database structure flat and will make
-     * it easier to communicate between Fragments and Activities.
-     */
-    private List<String> voters = new ArrayList<>();
+    private List<User> voters = new ArrayList<>();
 
     /**
      * Random selected bossiness for voting.
@@ -43,7 +39,8 @@ public class Poll {
     public Poll(User user, String pollId) {
         this.author = user;
         this.pollId = pollId;
-        voters.add(author.getId());
+        // The author must participate in their own poll
+        voters.add(author);
     }
 
     public String getTitle() {
@@ -94,10 +91,6 @@ public class Poll {
         this.openNow = openNow;
     }
 
-    public String getAuthorId() {
-        return author.getId();
-    }
-
     public boolean isCompleted() {
         return completed;
     }
@@ -106,17 +99,17 @@ public class Poll {
         this.completed = completed;
     }
 
-    public List<String> getVoters() {
+    public List<User> getVoters() {
         return voters;
     }
 
-    public void addVoters(String voter) {
+    public void addVoters(User voter) {
         if (!voters.contains(voter)) {
             voters.add(voter);
         }
     }
 
-    public void removeVoters(String voter) {
+    public void removeVoters(User voter) {
         voters.remove(voter);
     }
 

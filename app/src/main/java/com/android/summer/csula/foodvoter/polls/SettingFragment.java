@@ -38,10 +38,8 @@ public class SettingFragment extends Fragment {
 
     private static final String TAG = SettingFragment.class.getSimpleName();
 
-    private static final String KEY_POLL_ID = "pollKey";
     private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_TITLE = "title";
-    private static final String KEY_AUTHOR_ID = "authorId";
     private static final String KEY_ZIP_CODE = "zipCode";
     private static final String KEY_PRICE = "price";
     private static final String KEY_OPEN = "openNow";
@@ -69,8 +67,6 @@ public class SettingFragment extends Fragment {
     private static Bundle buildPollBundle(Poll poll) {
         Bundle args = new Bundle();
 
-        args.putString(KEY_AUTHOR_ID, poll.getAuthorId());
-        args.putString(KEY_POLL_ID, poll.getPollId());
         args.putString(KEY_TITLE, poll.getTitle());
         args.putString(KEY_DESCRIPTION, poll.getDescription());
         args.putString(KEY_ZIP_CODE, poll.getZipCode());
