@@ -168,32 +168,57 @@
                         android:textSize="21sp"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="144dp"
+                    
+                    <!--<TextView-->
+                        <!--android:layout_width="144dp"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:text=" Price: "-->
+                        <!--android:textAlignment="center"-->
+                        <!--android:textSize="14sp" />-->
+                    <!--<TextView-->
+                        <!--android:id="@+id/price"-->
+                        <!--android:layout_width="141dp"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:text=" $$$$"-->
+                        <!--android:textAlignment="center"-->
+                        <!--android:textSize="14sp" />-->
+
+
+                    <CheckBox
+                        android:id="@+id/$"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text=" Price: "
-                        android:textAlignment="center"
-                        android:textSize="14sp" />
+                        android:text=" $ = under $10"
+                        android:enabled="false"/>
 
-                    <TextView
-                        android:id="@+id/price"
-                        android:layout_width="141dp"
+                    <CheckBox
+                        android:id="@+id/$$"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text=" $"
-                        android:textAlignment="center"
-                        android:textSize="14sp" />
+                        android:text=" $$ = $11 - $30"
+                        android:enabled="false"
+                         />
 
-
-                    <TextView
-                        android:id="@+id/rating"
-                        android:layout_width="match_parent"
+                    <CheckBox
+                        android:id="@+id/$$$"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:scrollHorizontally="false"
-                        android:text="2.5"
-                        android:textAllCaps="true"
-                        android:textStyle="bold|italic" />
+                        android:text=" $$$ = $31 - $60"
+                        android:enabled="false"/>
 
+                    <CheckBox
+                        android:id="@+id/$$$$"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" $$$$ = above $61"
+                        android:enabled="false"/>
+
+                    <RatingBar
+                        android:id="@+id/ratingsBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginTop="0dp" />
 
 
                 </LinearLayout>

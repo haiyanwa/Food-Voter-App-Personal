@@ -14,7 +14,9 @@ import android.support.v7.widget.RecyclerView;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.android.summer.csula.foodvoter.models.Details;
@@ -36,9 +38,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 
 public class DetailActivity extends AppCompatActivity {
-    TextView mName, mPhone, mAddress, mUrl;
-    ImageView mImageURL;
-
+    public TextView mName, mPhone, mAddress, mUrl, mPrice;
+    public ImageView mImageURL;
+    public RatingBar mRating;
+    public CheckBox mCheckBox$, mCheckBox$$, mCheckBox$$$, mCheckBox$$$$;
+    public String price;
     Details details;
     Business mBusiness;
     String phoneNumber = "(818) 753-4867";
@@ -73,10 +77,12 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
+//        mPrice = (TextView) findViewById(R.id.price);
         mName = (TextView) findViewById(R.id.restaurantName);
         mPhone = (TextView) findViewById(R.id.phoneNumber);
         mUrl = (TextView) findViewById(R.id.url);
         mAddress = (TextView) findViewById(R.id.address);
+        mRating = (RatingBar) findViewById(R.id.ratingsBar);
 
 
         Intent intent = getIntent();
@@ -87,20 +93,24 @@ public class DetailActivity extends AppCompatActivity {
             String image_url = bundle.getString("image_url");
             String url = bundle.getString("url");
             String address = bundle.getString("display_address");
-            longitude = bundle.getString("lon");
-            lattitude = bundle.getString("lat");
-            STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
-
-
+            String ratings = bundle.getString("ratings");
 
             mName.setText(rest_Name);
             mPhone.setText(phone_number);
+            mAddress.setText(address);
+            mRating.setRating(Float.parseFloat(ratings));
+//            mPrice.setText(price);
+
+
+            price = bundle.getString("price");
+            CheckboxChecking(price);
+
             mUrl.setText(url);
             Linkify.addLinks(mUrl, Linkify.WEB_URLS);
-            mAddress.setText(address);
 
-
-
+            longitude = bundle.getString("lon");
+            lattitude = bundle.getString("lat");
+            STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 
 
 
@@ -115,8 +125,8 @@ public class DetailActivity extends AppCompatActivity {
             collapsingToolbar.setTitle(rest_Name);
             collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
             collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
-
         }
+
         if (bundle == null){
                     viewModel();
         }
@@ -166,6 +176,26 @@ public class DetailActivity extends AppCompatActivity {
 
     }
 
+    public void CheckboxChecking(String price){
+        mCheckBox$ = (CheckBox) findViewById(R.id.$);
+        mCheckBox$$ = (CheckBox) findViewById(R.id.$$);
+        mCheckBox$$$ = (CheckBox) findViewById(R.id.$$$);
+        mCheckBox$$$$ = (CheckBox) findViewById(R.id.$$$$);
+
+        if (price.equals("$$$$")){
+            mCheckBox$$$$.setChecked(true);;
+        }
+        else if (price.equals("$$$")){
+            mCheckBox$$$.setChecked(true);
+        }
+        else if (price.equals("$$")){
+            mCheckBox$$.setChecked(true);
+        }
+        else{
+            mCheckBox$.setChecked(true);
+        }
+    }
+
 
 
 
@@ -204,7 +234,6 @@ public class DetailActivity extends AppCompatActivity {
         //setting Rest Name
         CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         collapsingToolbar.setTitle(details.getRestaurantName());
-
 
         collapsingToolbar.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
         collapsingToolbar.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
