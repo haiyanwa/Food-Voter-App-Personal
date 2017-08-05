@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
+import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
+import com.android.summer.csula.foodvoter.yelpApi.models.Location;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 
 import java.util.List;
@@ -139,6 +141,7 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onListItemClick(Business business) {
+
         /**if(mToast != null){
             mToast.cancel();
         }
@@ -151,9 +154,36 @@ public class ListActivity extends AppCompatActivity implements LoaderManager.Loa
                 ", phone:" + business.getDisplayPhone() + ", location:" + business.getLocation();
         Log.d(TAG, "intent passed details " + details);
         intent.putExtra(intent.EXTRA_TEXT,details);
+
+
+
+        Location location = new Location();
+        Coordinate coordinate = new Coordinate();
+        location = business.getLocation();
+        coordinate = business.getCoordinate();
+        String address = location.getDisplayAddress().toString().substring(1,(location.getDisplayAddress().toString().length())-1);
+        double lat = coordinate.getLatitude();
+        double lon = coordinate.getLatitude();
+
+
+        intent.putExtra("display_phone", business.getDisplayPhone());
+        intent.putExtra("name", business.getName());
+        intent.putExtra("image_url", business.getImageUrl());
+        intent.putExtra("url", business.getUrl());
+        intent.putExtra("display_address", address);
+        intent.putExtra("latitude", String.valueOf(lat));
+        intent.putExtra("longtitude", String.valueOf(lon));
+
+
+
+        Log.d("ppp", String.valueOf(lat));
+        Log.d("ppp", String.valueOf(lon));
+
         startActivity(intent);
 
     }
+
+
 
     @Override
     public void onSwitchSwiped(Business business, boolean swiped) {
