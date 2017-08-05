@@ -43,17 +43,13 @@ public class DetailActivity extends AppCompatActivity {
     public RatingBar mRating;
     public CheckBox mCheckBox$, mCheckBox$$, mCheckBox$$$, mCheckBox$$$$;
     public String price;
-    Details details;
+
     Business mBusiness;
-    String phoneNumber = "(818) 753-4867";
-    String restAddress = "1000 Universal Studios Blvd #114, Universal City, CA 91608";
-    String restName = "Bubba Gump Shrimp Co.";
 
 
     //this is tempoary, will need to find a way to get data for long and lat
-    public String longitude = "34.137022";
-    public String lattitude = "-118.352266";
-    String STATIC_MAP_API_ENDPOINT;
+    String MAP_API_ENDPOINT;
+
 //    public String STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 //    static final String STATIC_MAP_API_ENDPOINT = "http://maps.google.com/maps/api/staticmap?center=34.004507,-118.256703&zoom=13&markers=size:mid|color:red|label:E|34.004507,-118.256703&size=1500x300&sensor=false";
 
@@ -94,6 +90,8 @@ public class DetailActivity extends AppCompatActivity {
             String url = bundle.getString("url");
             String address = bundle.getString("display_address");
             String ratings = bundle.getString("ratings");
+            String longitude = bundle.getString("longitude");
+            String latitude = bundle.getString("latitude");
 
             mName.setText(rest_Name);
             mPhone.setText(phone_number);
@@ -108,18 +106,15 @@ public class DetailActivity extends AppCompatActivity {
             mUrl.setText(url);
             Linkify.addLinks(mUrl, Linkify.WEB_URLS);
 
-            longitude = bundle.getString("lon");
-            lattitude = bundle.getString("lat");
-            STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
-
-
-
-
-
             ImageView mImgURL = (ImageView) findViewById(R.id.imgURL);
             Picasso.with(this)
                     .load(image_url)
                     .into(mImgURL);
+
+
+
+            MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+latitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
+
             //setting Rest Name for collapsingToolbar
             CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
             collapsingToolbar.setTitle(rest_Name);
@@ -133,26 +128,12 @@ public class DetailActivity extends AppCompatActivity {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         AsyncTask<Void, Void, Bitmap> setImageFromUrl = new AsyncTask<Void, Void, Bitmap>(){
             @Override
             protected Bitmap doInBackground(Void... params) {
                 Bitmap bmp = null;
                 HttpClient httpclient = new DefaultHttpClient();
-                HttpGet request = new HttpGet(STATIC_MAP_API_ENDPOINT);
+                HttpGet request = new HttpGet(MAP_API_ENDPOINT);
 
                 InputStream in = null;
                 try {
@@ -172,7 +153,6 @@ public class DetailActivity extends AppCompatActivity {
             }
         };
         setImageFromUrl.execute();
-
 
     }
 
@@ -197,13 +177,15 @@ public class DetailActivity extends AppCompatActivity {
     }
 
 
-
-
-
 //method for testing view
     public void viewModel(){
-        details = new Details();
+        Details details = new Details();
+        String longitude = "34.137022";
+        String latitude = "-118.352266";
 
+        String phoneNumber = "(818) 753-4867";
+        String restAddress = "1000 Universal Studios Blvd #114, Universal City, CA 91608";
+        String restName = "Bubba Gump Shrimp Co.";
         mUrl = (TextView) findViewById(R.id.url);
         mUrl.setText("http://www.yelp.com/biz/yelp-san-francisco");
         Linkify.addLinks(mUrl, Linkify.WEB_URLS);
@@ -229,7 +211,7 @@ public class DetailActivity extends AppCompatActivity {
                 .load(details.getImgURL())
                 .into(mImageURL);
 
-         STATIC_MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+lattitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
+         MAP_API_ENDPOINT ="http://maps.google.com/maps/api/staticmap?center="+longitude+","+latitude+"&zoom=15&size=2000x500&scale=2&sensor=false";
 
         //setting Rest Name
         CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
