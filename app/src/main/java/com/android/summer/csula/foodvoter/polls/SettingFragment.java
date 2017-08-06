@@ -1,19 +1,13 @@
 package com.android.summer.csula.foodvoter.polls;
 
 
-import android.Manifest;
 import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,14 +19,11 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.R;
 import com.android.summer.csula.foodvoter.polls.models.Poll;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
 import com.android.summer.csula.foodvoter.yelpApi.models.YelpPriceLevel;
-
-import java.util.Arrays;
 
 public class SettingFragment extends Fragment {
 
@@ -44,8 +35,7 @@ public class SettingFragment extends Fragment {
     private static final String KEY_PRICE = "price";
     private static final String KEY_OPEN = "openNow";
 
-    private static final int REQUEST_CODE_LOCATION = 123;
-
+    private boolean hasLocation;
     private Spinner priceSpinner;
     private EditText zipCode;
     private RadioButton currentLocationRadioButton;
@@ -53,7 +43,7 @@ public class SettingFragment extends Fragment {
     private View view;
 
     private OnPollSettingsListener onPollSettingsListener;
-    private Coordinate coordinate;
+    private RadioGroup locationRadioGroup;
 
     public SettingFragment() {}
 
@@ -72,7 +62,6 @@ public class SettingFragment extends Fragment {
         args.putString(KEY_ZIP_CODE, poll.getZipCode());
         args.putString(KEY_PRICE, poll.getPrice());
         args.putBoolean(KEY_OPEN, poll.isOpenNow());
-
         return args;
     }
 
@@ -83,56 +72,9 @@ public class SettingFragment extends Fragment {
 
         view = inflater.inflate(R.layout.setting_fragment, container, false);
 
-        // We need permission to obtain the users current coordinates,
-        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION);
-
         initializeUI();
 
         return view;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode != REQUEST_CODE_LOCATION) {
-            return;
-        }
-
-        Log.d(TAG, "requestCode: " + requestCode +
-            ", permission: " + Arrays.toString(permissions) +
-            ", grantedResults: " + Arrays.toString(grantResults));
-
-
-        // Check if we can obtain the user's current coordinate
-        // if we don't have permission or if can't obtain permission,
-        // we will ask the user to manually enter their location instead
-        try {
-            LocationManager lm = (LocationManager) view.getContext().getSystemService(Context.LOCATION_SERVICE);
-
-            // We get the last know location, if the users moved, locationListener() will provided us
-            // with the latest coordinates.
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener());
-            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-            if (location == null) {
-                currentLocationRadioButton.setEnabled(false);
-                zipCodeRadioButton.setChecked(true);
-                Toast.makeText(view.getContext(), "I can't  access your location. Please enter it manually", Toast.LENGTH_LONG).show();
-                Log.d(TAG, "onRequestPermissionsResult() - Location Object is null.");
-            } else {
-                Log.d(TAG, "onRequestPermissionsResult() - " + location.getLatitude() + " " + location.getLongitude());
-                coordinate = new Coordinate();
-                coordinate.setLatitude(location.getLatitude());
-                coordinate.setLongitude(location.getLongitude());
-
-                onPollSettingsListener.onCoordinateChange(coordinate);
-            }
-
-        } catch (SecurityException e) {
-            Log.e(TAG, "Location Failed!", e);
-            currentLocationRadioButton.setEnabled(false);
-        }
     }
 
     @Override
@@ -148,6 +90,17 @@ public class SettingFragment extends Fragment {
         }
     }
 
+    /**
+     * Allow Host Activity to tell this Fragment weather or not to unlock the "current_location"
+     * button. If the app have access to the user's location, then this should be set to true.
+     * When false, the user is required to enter their location manually.
+     * */
+    public void unlockCurrentLocationRadio(boolean value) {
+        this.hasLocation = value;
+        updateButtonState();
+        setupRadioGroups();
+    }
+
     private void initializeUI() {
         setupTitle();
         setupDescription();
@@ -156,11 +109,22 @@ public class SettingFragment extends Fragment {
         setupSpinner();
         setupRadioGroups();
         setupRadioButtons();
+
     }
 
     private void setupRadioButtons() {
+        // If our activity tell us that it can't find a location (happens alot with emulator)
+        // then disable the location radio button
         currentLocationRadioButton = (RadioButton) view.findViewById(R.id.radio_button_current_location);
         zipCodeRadioButton = (RadioButton) view.findViewById(R.id.radio_button_use_zip_code);
+
+        updateButtonState();
+    }
+
+    private void updateButtonState() {
+        currentLocationRadioButton.setEnabled(hasLocation);
+        currentLocationRadioButton.setChecked(hasLocation);
+        zipCodeRadioButton.setChecked(!hasLocation);
     }
 
     private void setupCheckbox() {
@@ -234,18 +198,17 @@ public class SettingFragment extends Fragment {
     }
 
     private void setupRadioGroups() {
-        RadioGroup locationRadioGroup = (RadioGroup) view.findViewById(R.id.radioGroup);
+        locationRadioGroup = (RadioGroup) view.findViewById(R.id.radioGroup);
         locationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
                 if (R.id.radio_button_use_zip_code == i) {
                     zipCode.setEnabled(true);
-                } else if (R.id.radio_button_current_location == i) {
+                    onPollSettingsListener.onUseCoordinate(false);
+                } else if (R.id.radio_button_current_location == i && hasLocation) {
                     zipCode.getText().clear();
                     zipCode.setEnabled(false);
-                    if (coordinate != null) {
-                        onPollSettingsListener.onCoordinateChange(coordinate);
-                    }
+                    onPollSettingsListener.onUseCoordinate(true);
                 }
             }
         });
@@ -258,7 +221,7 @@ public class SettingFragment extends Fragment {
 
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-            view.getContext(), R.array.price_array, android.R.layout.simple_spinner_item);
+                view.getContext(), R.array.price_array, android.R.layout.simple_spinner_item);
 
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -304,31 +267,6 @@ public class SettingFragment extends Fragment {
     }
 
     /**
-     * Return a listener that detects when the coordinates location of the device change.
-     * When a location changed, it will inform the Host Activity through the OnPollSettingInterface
-     */
-    private LocationListener locationListener() {
-        return new LocationListener() {
-            public void onLocationChanged(Location location) {
-                coordinate = new Coordinate();
-                coordinate.setLatitude(location.getLongitude());
-                coordinate.setLongitude(location.getLongitude());
-                Log.d(TAG, "Coordinate Changed: " + coordinate.toString());
-                onPollSettingsListener.onCoordinateChange(coordinate);
-            }
-
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) { }
-
-            @Override
-            public void onProviderEnabled(String s) { }
-
-            @Override
-            public void onProviderDisabled(String s) { }
-        };
-    }
-
-    /**
      * This interface is use to let the host activity know when a setting field has change in the
      * setting tab
      */
@@ -343,6 +281,6 @@ public class SettingFragment extends Fragment {
 
         void onZipCodeChange(String zipCode);
 
-        void onCoordinateChange(Coordinate coordinate);
+        void onUseCoordinate(boolean useCoordinate);
     }
 }
