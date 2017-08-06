@@ -9,17 +9,24 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses;
 import com.android.summer.csula.foodvoter.models.UserVote;
+import com.android.summer.csula.foodvoter.polls.models.Poll;
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
 import com.android.summer.csula.foodvoter.yelpApi.models.Location;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses.POLLS;
+import static com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses.SELECTED_POLL_ID;
 
 public class ListActivity extends AppCompatActivity implements RVoteAdapter.ListItemClickListener, RVoteAdapter.SwitchListener {
 
@@ -48,44 +55,31 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
 
         rVoteRecyclerView = (RecyclerView) findViewById(R.id.rv_vote_list);
 
+        rChoiceData = new ArrayList<Business>();
+        rVoteAdapter = new RVoteAdapter(this,rChoiceData,this,this);
+        rVoteRecyclerView.setAdapter(rVoteAdapter);
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rVoteRecyclerView.setLayoutManager(layoutManager);
 
         rVoteRecyclerView.setHasFixedSize(true);
 
-        try{
-            //ToDo: remove this line when using firebase
-            //rChoiceData = DataRetriever.getRestaurants(latitude,longtitude).getBusinesses();
+        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
+                .child(POLLS)
+                .child(SELECTED_POLL_ID);
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Poll poll = dataSnapshot.getValue(Poll.class);
+                rVoteAdapter.addData(poll.getBusinesses());
+                ref.removeEventListener(this);
+                rVoteAdapter.notifyDataSetChanged();
+            }
 
-            //Todo: get data from firebase
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
 
-            FirebasePollBusinesses.execute(new FirebasePollBusinesses.OnFirebaseResultListener() {
-
-                @Override
-
-                public void onResult(List<Business> businesses) {
-
-                    for(Business business : businesses){
-                        Log.d("coordinates", business.getCoordinate().toString());
-                    }
-                    if(rChoiceData == null){
-                        rChoiceData = businesses;
-                    }else{
-                        rVoteAdapter.swapData(businesses);
-                    }
-                }
-
-
-            });
-            rVoteAdapter = new RVoteAdapter(this,rChoiceData,this,this);
-
-        }catch(Exception e){
-
-            rVoteAdapter = new RVoteAdapter(this,null,this,this);
-            e.printStackTrace();
-            Log.d(TAG, "Error: Failed to get data for rVoteAdapter");
-        }
-        rVoteRecyclerView.setAdapter(rVoteAdapter);
 
     }
     /**

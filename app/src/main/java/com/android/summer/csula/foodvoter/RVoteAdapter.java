@@ -36,8 +36,7 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
     private final Context mContext;
 
-    //private List<restaurant> mChoiceData;
-    private List<Business> mChoiceData;
+    private ArrayList<Business> mChoiceData;
 
     private final int ListItem = 0;
     private final int EndOfList= 1;
@@ -62,7 +61,7 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
     }*/
     public RVoteAdapter(@NonNull Context context, List<Business> businesses, ListItemClickListener listener, SwitchListener swListener) {
         mContext = context;
-        mChoiceData = businesses;
+        mChoiceData = (ArrayList)businesses;
         mOnClickListener = listener;
         switchListener = swListener;
     }
@@ -98,15 +97,18 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
         return mChoiceData.size() + 1;
     }
 
+    public void addData(List<Business> businesses){
+        mChoiceData.addAll(businesses);
+    }
     public void swapData(List<Business> businesses) {
         // check if this data is the same as the previous data
         //if same then return
         if (mChoiceData == businesses) {
             return;
         }
-        //check if this is a valid cursor, then update the cursor
+        //replace the old data with new data and force the recyclerView to refresh
         if (businesses != null) {
-            this.mChoiceData = businesses;
+            this.mChoiceData = (ArrayList) businesses;
             this.notifyDataSetChanged();
         }
     }
