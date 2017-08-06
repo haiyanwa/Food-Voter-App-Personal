@@ -1,9 +1,10 @@
 package com.android.summer.csula.foodvoter.yelpApi.models;
 
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Business {
+public class Business implements Serializable {
 
     /**
      * A list of category title and alias pairs associated with this business.

@@ -5,10 +5,11 @@ import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Poll {
+public class Poll implements Serializable {
 
     private static final String DEFAULT_PRICE = "1";
 
@@ -19,17 +20,30 @@ public class Poll {
     private String description;
     private Coordinate coordinate;
     private String zipCode;
+    /**
+     * Yelp Price Level 1,2,3,4 ($,$$,$$$,$$$$)
+     */
     private String price = DEFAULT_PRICE;
     private boolean openNow;
 
+    /**
+     * Determine if the poll is completed(accepting votes) or completed(not accepting votes)
+     */
     private boolean completed;
+
+
+    /**
+     * Number of millisecond since UNIX epoch when this Poll is activated, right before sending
+     * it to a database;
+     */
+    private long activatedOn;
 
     private List<User> voters = new ArrayList<>();
 
     /**
      * Random selected bossiness for voting.
      */
-    private List<Business> businesses;
+    private List<Business> businesses = new ArrayList<>();
 
     /**
      * No argument constructor is for Firebase
@@ -37,9 +51,8 @@ public class Poll {
     public Poll() {}
 
 
-    public Poll(User user, String pollId) {
+    public Poll(User user) {
         this.author = user;
-        this.pollId = pollId;
         // The author must participate in their own poll
         voters.add(author);
     }
@@ -126,6 +139,14 @@ public class Poll {
         return author;
     }
 
+    public long getActivatedOn() {
+        return activatedOn;
+    }
+
+    public void setActiveOn(long activatedOn) {
+        this.activatedOn = activatedOn;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -144,6 +165,10 @@ public class Poll {
 
     public List<Business> getBusinesses() {
         return businesses;
+    }
+
+    public void setBusinesses(List<Business> businesses) {
+        this.businesses = businesses;
     }
 
     @Override

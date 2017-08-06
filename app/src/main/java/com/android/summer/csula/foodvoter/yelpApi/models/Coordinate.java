@@ -1,7 +1,9 @@
 package com.android.summer.csula.foodvoter.yelpApi.models;
 
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable {
 
     /**
      * The latitude of this business.

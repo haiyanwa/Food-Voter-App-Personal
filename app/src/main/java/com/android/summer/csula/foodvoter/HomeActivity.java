@@ -86,8 +86,10 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         });
 
 
-        pollIntentFilter = new IntentFilter(
-                PollBroadcastReceiver.UPDATE_BUSINESS_FIREBASE_COMPLETED);
+        // Setup up broadcast receiver so it can notify the activity when poll write are done
+        pollIntentFilter = new IntentFilter();
+        pollIntentFilter.addAction(PollBroadcastReceiver.ACTION_SUCCESSFUL_WRITE);
+        pollIntentFilter.addAction(PollBroadcastReceiver.ACTION_UNSUCCESSFUL_WRITE);
         pollBroadcastReceiver = new PollBroadcastReceiver();
     }
 
@@ -123,8 +125,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         if (requestCode == REQUEST_CODE_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 String displayName = firebaseAuth.getCurrentUser().getDisplayName();
-                Toast.makeText(this, "Signed in as " + displayName,
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Signed in as " + displayName, Toast.LENGTH_LONG).show();
             } else if (resultCode == RESULT_CANCELED) {
                 finish();
             }
@@ -300,19 +301,35 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
     public void onFriendAdded(User user) { } // Left intentionally blank
 
 
+    /**
+     * This broadcast receiver is use to let us know if writing Poll object to Firebase Real Time
+     * Database was successful or not. It will show a toast to alert the users of the status.
+     */
     public class PollBroadcastReceiver extends BroadcastReceiver {
-        public static final String UPDATE_BUSINESS_FIREBASE_COMPLETED = "updateBusinessFirebase";
+        public static final String ACTION_SUCCESSFUL_WRITE = "successful_create";
+        public static final String ACTION_UNSUCCESSFUL_WRITE = "unsuccessful_create";
+
 
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
             switch (action) {
-                case UPDATE_BUSINESS_FIREBASE_COMPLETED:
-                    Toast.makeText(HomeActivity.this, "Business uploaded to firebase!",
-                            Toast.LENGTH_LONG).show();
+                case ACTION_SUCCESSFUL_WRITE:
+                    displaySuccessfulWriteToast(context);
+                    break;
+                case ACTION_UNSUCCESSFUL_WRITE:
+                    displayUnsuccessfulWriteToast(context);
                     break;
             }
+        }
+
+        private void displaySuccessfulWriteToast(Context context) {
+            Toast.makeText(context, "Poll Creation was successful!", Toast.LENGTH_LONG).show();
+        }
+
+        private void displayUnsuccessfulWriteToast(Context context) {
+            Toast.makeText(context, "Poll Creation was successful!", Toast.LENGTH_LONG).show();
         }
     }
 }
