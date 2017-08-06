@@ -12,6 +12,7 @@ public class Poll {
 
     private static final String DEFAULT_PRICE = "1";
 
+    // TODO: add a date_created field so it could by sorted by date.
     private User author;
     private String pollId;
     private String title;

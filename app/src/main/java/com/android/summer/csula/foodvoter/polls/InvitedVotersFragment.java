@@ -113,13 +113,16 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
     public void onUserChanged(User user) { }
 
 
+    // Firebase database will call this method whenever a friend ha been added to the
+    // users friendship node.
     @Override
     public void onFriendAdded(User user) {
         Log.d(TAG, "friends added: " + user.toString());
 
         friendsAdapter.addFriend(user);
 
-        /* Check if the new friend is already invited, if so update the viewHolder*/
+        // Check the voter list, passed to by the activity,  to see if the "user"
+        // has already been invited. If so, update its visual through the adapter
         for (User voter: voters) {
             if (voter.equals(user)) {
                 friendsAdapter.updateInvitedUser(user);

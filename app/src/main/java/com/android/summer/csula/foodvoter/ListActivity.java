@@ -170,7 +170,6 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
         coordinate = business.getCoordinate();
         String address = location.getDisplayAddress().toString().substring(1,(location.getDisplayAddress().toString().length())-1);
         String rating = String.valueOf(business.getRating());
-
         intent.putExtra("display_phone", business.getDisplayPhone());
         intent.putExtra("name", business.getName());
         intent.putExtra("image_url", business.getImageUrl());
@@ -178,17 +177,13 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
         intent.putExtra("display_address", address);
         intent.putExtra("ratings", rating);
         intent.putExtra("price", business.getPrice());
+        intent.putExtra("latitude",String.valueOf(business.getCoordinate().getLongitude()));
+        intent.putExtra("longitude",  String.valueOf(business.getCoordinate().getLatitude()));
 
-        intent.putExtra("latitude", String.valueOf(coordinate.getLatitude()));
-        intent.putExtra("longtitude", String.valueOf( coordinate.getLatitude()));
-
-
-
-        Log.d("ppp", (business.getPrice()));
-//        Log.d("ppp", String.valueOf(lon));
+//        Log.d("ppp",  String.valueOf(business.getCoordinate().getLongitude()));
+//        Log.d("ppp",  String.valueOf(business.getCoordinate().getLatitude()));
 
         startActivity(intent);
-
     }
 
 

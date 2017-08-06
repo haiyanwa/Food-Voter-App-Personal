@@ -24,7 +24,7 @@ import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.database.UserUpdater;
 import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.polls.AllPollsFragment;
-import com.android.summer.csula.foodvoter.polls.InvitedPollsFragment;
+import com.android.summer.csula.foodvoter.polls.InvitedToPollFragment;
 import com.android.summer.csula.foodvoter.polls.PollActivity;
 import com.android.summer.csula.foodvoter.pushNotifications.MyFirebasePreference;
 import com.firebase.ui.auth.AuthUI;
@@ -218,7 +218,7 @@ public class HomeActivity extends AppCompatActivity implements FoodVoterFirebase
         if (selectedTab.equals(allTabs)) {
             replaceFragment(AllPollsFragment.newInstance());
         } else if (selectedTab.equals(invitedTab)) {
-            replaceFragment(InvitedPollsFragment.newInstance());
+            replaceFragment(InvitedToPollFragment.newInstance(firebaseUser.getUid()));
         }
     }
 

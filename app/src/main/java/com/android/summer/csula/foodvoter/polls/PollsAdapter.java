@@ -20,6 +20,11 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
 
     private static final String TAG = PollActivity.class.getSimpleName();
     private List<Poll> polls = new ArrayList<>();
+    private boolean invited;
+
+    public PollsAdapter(boolean invited) {
+        this.invited = invited;
+    }
 
     @Override
     public PollViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -43,9 +48,8 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
     }
 
     public void addPoll(Poll poll) {
-        polls.add(poll);
+        polls.add(0, poll);  // add the item to head of the list
         notifyDataSetChanged();
-        Log.d(TAG, "poll size: " + polls.size());
     }
 
 
@@ -76,6 +80,10 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
             title.setText(current.getTitle());
             description.setText(current.getDescription());
             completed.setText(current.isCompleted() ? "Completed" : "Not Completed");
+
+            if(invited) {
+                image.setImageResource(R.drawable.ic_restaurant);
+            }
         }
     }
 

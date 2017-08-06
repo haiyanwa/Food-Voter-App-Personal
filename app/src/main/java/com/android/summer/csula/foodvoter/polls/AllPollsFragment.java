@@ -69,7 +69,7 @@ public class AllPollsFragment extends Fragment {
     }
 
     private void initializeRecyclerView(View view) {
-        pollsAdapter = new PollsAdapter();
+        pollsAdapter = new PollsAdapter(false);
 
         LayoutManager layoutManager = new LinearLayoutManager(view.getContext());
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_all_polls);
@@ -84,6 +84,7 @@ public class AllPollsFragment extends Fragment {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Poll poll = dataSnapshot.getValue(Poll.class);
                 pollsAdapter.addPoll(poll);
+                Log.d(TAG, "adding a new poll!: " + poll.getTitle());
             }
 
             @Override
