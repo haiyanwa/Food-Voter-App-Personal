@@ -1,7 +1,9 @@
 package com.android.summer.csula.foodvoter.yelpApi.models;
 
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable {
 
     /**
      * The latitude of this business.
@@ -15,6 +17,11 @@ public class Coordinate {
 
 
     public Coordinate() {}
+
+    public Coordinate(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
 
     public double getLatitude() {

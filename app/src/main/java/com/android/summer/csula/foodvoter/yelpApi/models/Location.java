@@ -1,9 +1,10 @@
 package com.android.summer.csula.foodvoter.yelpApi.models;
 
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Location {
+public class Location implements Serializable{
 
     /**
      * Street address of this business.
