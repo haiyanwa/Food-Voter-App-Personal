@@ -10,9 +10,14 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses;
+import com.android.summer.csula.foodvoter.models.UserVote;
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
 import com.android.summer.csula.foodvoter.yelpApi.models.Location;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
@@ -22,10 +27,12 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
     private RecyclerView rVoteRecyclerView;
     private List<Business> rChoiceData;
     private Toast mToast;
+    public static final String ANONYMOUS = "anonymous";
     //private Button mSendVoteBtn;
     private final static String TAG = "ListActivity";
 
     private Business votedBusiness;
+    private String mUsername = ANONYMOUS;
 
     private static final int ATASK_LOADER_ID = 0;
 
@@ -67,6 +74,7 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
                         rVoteAdapter.swapData(businesses);
                     }
                 }
+
 
             });
             rVoteAdapter = new RVoteAdapter(this,rChoiceData,this,this);
@@ -206,8 +214,20 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
     //For SendMyVote Button
     public void sendVote(View v){
         String message = "Send my vote for " + votedBusiness.getName();
-        mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
-        mToast.show();
+        //mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        //mToast.show();
+        DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if(user != null){
+            String userid = user.getUid();
+            UserVote userVote = new UserVote(userid, votedBusiness);
+            dbReference.push().setValue(userVote);
+        }else{
+            mToast = Toast.makeText(this, "Cannot find user. Failed to vote...", Toast.LENGTH_LONG);
+            mToast.show();
+        }
+
     }
 
 }
