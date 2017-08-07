@@ -12,6 +12,7 @@ import com.android.summer.csula.foodvoter.polls.models.Poll;
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Yelp;
 import com.android.summer.csula.foodvoter.yelpApi.tasks.RequestYelpSearchTask;
+import com.android.summer.csula.foodvoter.yelpApi.utils.BusinessUtilities;
 
 import java.net.URL;
 import java.util.List;
@@ -43,6 +44,7 @@ public class PollIntentService extends IntentService {
             URL url = PollUtilities.toURL(poll);
             Yelp yelp = RequestYelpSearchTask.execute(url);
             List<Business> businesses = yelp.getBusinesses();
+            List<Business> selections = BusinessUtilities.getRandoms(businesses);
             poll.setBusinesses(businesses);
             PollUtilities.writeToFirebase(poll);
             broadcastPollWriteStatus(HomeActivity.PollBroadcastReceiver.ACTION_SUCCESSFUL_WRITE);
