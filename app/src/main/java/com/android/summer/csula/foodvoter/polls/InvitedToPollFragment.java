@@ -20,7 +20,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class InvitedToPollFragment extends Fragment {
+public class InvitedToPollFragment extends PollFragment {
 
     private static final String KEY_USER_ID = "user_id";
 
@@ -68,7 +68,8 @@ public class InvitedToPollFragment extends Fragment {
     }
 
     private void initializeRecyclerView() {
-        pollsAdapter = new PollsAdapter(true);
+        // You inherited OnClickListner from PollFragment. True to show a invited icon instead
+        pollsAdapter = new PollsAdapter(this, true);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(view.getContext());
 

@@ -22,7 +22,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import static android.support.v7.widget.RecyclerView.*;
 
-public class AllPollsFragment extends Fragment {
+public class AllPollsFragment extends PollFragment {
 
     private static final String FIREBASE_NODE_POLLS = "polls";
     private static final String TAG = AllPollsFragment.class.getSimpleName();
@@ -69,7 +69,8 @@ public class AllPollsFragment extends Fragment {
     }
 
     private void initializeRecyclerView(View view) {
-        pollsAdapter = new PollsAdapter(false);
+        // You inherited  OnPollClickListener from the abstract class PollFragment
+        pollsAdapter = new PollsAdapter(this, false);
 
         LayoutManager layoutManager = new LinearLayoutManager(view.getContext());
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_all_polls);

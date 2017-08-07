@@ -1,5 +1,6 @@
 package com.android.summer.csula.foodvoter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -25,10 +26,10 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses.POLLS;
-import static com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses.SELECTED_POLL_ID;
-
 public class ListActivity extends AppCompatActivity implements RVoteAdapter.ListItemClickListener, RVoteAdapter.SwitchListener {
+
+    private static final String EXTRA_POLL = "poll";
+    private static final String POLLS_TREE = "polls";
 
     private RVoteAdapter rVoteAdapter;
     private RecyclerView rVoteRecyclerView;
@@ -41,11 +42,19 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
     private Business votedBusiness;
     private String mUsername = ANONYMOUS;
 
-    private static final int ATASK_LOADER_ID = 0;
+    private DatabaseReference pollRef;      // polls/{id}
+    private Poll poll;                      // the object corresponding to polls/{id}
 
-    //for testing
-    private String latitude = "34.066530";
-    private String longtitude = "-118.166560";
+
+    public static Intent newIntent(Context context, Poll poll) {
+        Intent intent = new Intent(context, ListActivity.class);
+        intent.putExtra(EXTRA_POLL, poll.getPollId());
+        return intent;
+    }
+
+    public static String getExtraPollId(Intent intent) {
+        return intent.getStringExtra(EXTRA_POLL);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,96 +63,21 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
         //mSendVoteBtn = (Button) findViewById(R.id.rv_vote_btn);
 
         rVoteRecyclerView = (RecyclerView) findViewById(R.id.rv_vote_list);
-
         rChoiceData = new ArrayList<Business>();
         rVoteAdapter = new RVoteAdapter(this,rChoiceData,this,this);
         rVoteRecyclerView.setAdapter(rVoteAdapter);
-
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rVoteRecyclerView.setLayoutManager(layoutManager);
-
-        rVoteRecyclerView.setHasFixedSize(true);
-
-        final DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
-                .child(POLLS)
-                .child(SELECTED_POLL_ID);
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Poll poll = dataSnapshot.getValue(Poll.class);
-                rVoteAdapter.addData(poll.getBusinesses());
-                ref.removeEventListener(this);
-                rVoteAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        });
-
-
     }
-    /**
-     //-----------------------------------------------------------------------------------
+
+
     @Override
     protected void onResume() {
         super.onResume();
 
-        // re-queries for all tasks
-        getSupportLoaderManager().restartLoader(ATASK_LOADER_ID, null, this);
+        initializePollRef();
     }
 
-    //ToDo: remove AsyncTaskLoader when we use firebase
-    @Override
-    public Loader<Yelp> onCreateLoader(int id, Bundle args) {
-        return new AsyncTaskLoader<Yelp>(this) {
-
-            Yelp mCacheData = null;
-
-            @Override
-            protected void onStartLoading() {
-                if (mCacheData != null) {
-                    // Delivers any previously loaded data immediately
-                    deliverResult(mCacheData);
-                } else {
-                    // Force a new load
-                    forceLoad();
-                }
-            }
-
-            @Override
-            public Yelp loadInBackground() {
-                try{
-                    //sync data -- pull data from api in json form then insert into database
-                    Yelp yelp = DataRetriever.getRestaurants(latitude,longtitude);
-
-                    //get cursor by querying database
-                    return yelp;
-
-                }catch (Exception e){
-                    Log.d(TAG, "Failed to load data in the backgroud");
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-
-            public void deliverResult(Yelp yelp) {
-                mCacheData = yelp;
-                super.deliverResult(yelp);
-            }
-        };
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Yelp> loader, Yelp data) {
-        rVoteAdapter.swapData(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Yelp> loader) {
-        rVoteAdapter.swapData(null);
-    }
-    // end of AsyncTaskLoader-------------------------------------------------------------------------------------
-    */
     @Override
     public void onListItemClick(Business business) {
 
@@ -180,7 +114,11 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
         startActivity(intent);
     }
 
-
+    private void initializePollRef() {
+        String pollId = getExtraPollId(getIntent());
+        pollRef = getPollRef(pollId);
+        attachSingleValueListenerToPoll();
+    }
 
     @Override
     public void onSwitchSwiped(Business business, boolean swiped) {
@@ -219,4 +157,42 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
 
     }
 
+    /**
+     * Returns a DatabaseReference to polls/{pollId}.
+     */
+    private DatabaseReference getPollRef(String pollId) {
+        return FirebaseDatabase.getInstance()
+                .getReference()
+                .child(POLLS_TREE)
+                .child(pollId);
+    }
+
+    /**
+     * Return a value event listener that will retrieve and set a Poll.cass to  our "poll" class
+     * variable.
+     */
+    private ValueEventListener getValueEventListenerForPoll() {
+        return new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                poll = dataSnapshot.getValue(Poll.class);
+
+                if (poll != null) {
+                    rVoteAdapter.setBusinesses(poll.getBusinesses());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        };
+    }
+
+    /**
+     *  Attach a listener for a single event, meaning it will read perform its operation once, and
+     *  stop. Thus you don't have to detach it.
+     */
+    private void attachSingleValueListenerToPoll() {
+        ValueEventListener valueEventListener = getValueEventListenerForPoll();
+        pollRef.addListenerForSingleValueEvent(valueEventListener);
+    }
 }
