@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.android.summer.csula.foodvoter.adapters.UsersAdapter;
@@ -15,7 +14,7 @@ import com.android.summer.csula.foodvoter.models.User;
 
 
 public class AddFriendshipActivity extends AppCompatActivity implements
-        UsersAdapter.UserOnClickHandler,
+        UsersAdapter.UserAdapterListener,
         FoodVoterFirebaseDb.Listener {
 
     private static final String TAG = AddFriendshipActivity.class.getSimpleName();
@@ -47,15 +46,14 @@ public class AddFriendshipActivity extends AppCompatActivity implements
 
         userRecyclerView = (RecyclerView) findViewById(R.id.rv_all_users);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        usersAdapter = new UsersAdapter(this);
+        usersAdapter = new UsersAdapter(this, R.drawable.ic_person_add);
         userRecyclerView.setLayoutManager(layoutManager);
         userRecyclerView.setAdapter(usersAdapter);
 
     }
 
     @Override
-    public void onImageButtonClick(User clickedUser) {
-        Log.d(TAG, "User that was clicked: " + clickedUser.toString());
+    public void onUserClick(User clickedUser) {
         database.befriendUser(userId, clickedUser);
         Toast.makeText(this, clickedUser.getUsername() + " added to your friend list!",
                 Toast.LENGTH_SHORT).show();
@@ -78,13 +76,11 @@ public class AddFriendshipActivity extends AppCompatActivity implements
 
     @Override
     public void onUserAdded(User user) {
-        Log.d(TAG, "user added: " + user.toString());
         usersAdapter.add(user);
     }
 
     @Override
     public void onUserChanged(User user) {
-        Log.d(TAG, "user changed: " + user.toString());
-        usersAdapter.update(user);
+        usersAdapter.updateOnlineStatus(user);
     }
 }
