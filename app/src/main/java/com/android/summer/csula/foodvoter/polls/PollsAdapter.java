@@ -20,9 +20,16 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
 
     private static final String TAG = PollActivity.class.getSimpleName();
     private List<Poll> polls = new ArrayList<>();
+    private OnPollClickListener onPollClickListener;
+
+    /**
+     * Show a different icon, if it is true
+     * TODO: replace this with resID, less confusing
+     */
     private boolean invited;
 
-    public PollsAdapter(boolean invited) {
+    public PollsAdapter(OnPollClickListener onPollClickListener, boolean invited) {
+        this.onPollClickListener = onPollClickListener;
         this.invited = invited;
     }
 
@@ -64,6 +71,8 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
             super(itemView);
 
             initializeView(itemView);
+
+            initializeViewClickListener(itemView);
         }
 
         private void initializeView(View view) {
@@ -71,6 +80,18 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
             completed = (TextView) view.findViewById(R.id.textview_completed);
             description = (TextView) view.findViewById(R.id.textview_description);
             image = (ImageView) view.findViewById(R.id.imageview_poll);
+        }
+
+
+        private void initializeViewClickListener(View itemView) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    final Poll poll = polls.get(position);
+                    onPollClickListener.onPollClick(poll);
+                }
+            });
         }
 
         public void bind(int position) {
@@ -81,10 +102,14 @@ public class PollsAdapter extends RecyclerView.Adapter<PollsAdapter.PollViewHold
             description.setText(current.getDescription());
             completed.setText(current.isCompleted() ? "Completed" : "Not Completed");
 
-            if(invited) {
+            if (invited) {
                 image.setImageResource(R.drawable.ic_restaurant);
             }
         }
     }
 
+
+    public interface OnPollClickListener {
+        void onPollClick(Poll poll);
+    }
 }

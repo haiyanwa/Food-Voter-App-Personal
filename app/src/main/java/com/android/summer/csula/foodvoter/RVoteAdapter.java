@@ -36,7 +36,7 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
     private final Context mContext;
 
-    private ArrayList<Business> mChoiceData;
+    private List<Business> mChoiceData;
 
     private final int ListItem = 0;
     private final int EndOfList= 1;
@@ -97,9 +97,11 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
         return mChoiceData.size() + 1;
     }
 
-    public void addData(List<Business> businesses){
-        mChoiceData.addAll(businesses);
+    public void setBusinesses(List<Business> businesses) {
+        mChoiceData = businesses;
+        notifyDataSetChanged();;
     }
+
     public void swapData(List<Business> businesses) {
         // check if this data is the same as the previous data
         //if same then return

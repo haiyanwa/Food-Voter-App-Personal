@@ -11,21 +11,21 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 
-import com.android.summer.csula.foodvoter.adapters.FriendsAdapter;
+import com.android.summer.csula.foodvoter.adapters.UsersAdapter;
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
 
 import static android.support.v7.widget.RecyclerView.*;
 
 public class FriendsActivity extends AppCompatActivity implements
-        FriendsAdapter.FriendsAdapterListener,
+        UsersAdapter.UserAdapterListener,
         FoodVoterFirebaseDb.Listener {
 
     private static final String EXTRA_USER_ID = "user_id";
     private static final String TAG = FriendsActivity.class.getSimpleName();
 
     private RecyclerView friendsRecyclerView;
-    private FriendsAdapter friendsAdapter;
+    private UsersAdapter usersAdapter;
     private FloatingActionButton addFriendButton;
 
     private FoodVoterFirebaseDb foodVoterFirebaseDb;
@@ -64,11 +64,11 @@ public class FriendsActivity extends AppCompatActivity implements
     private void initViews() {
         LayoutManager layoutManager = new LinearLayoutManager(this);
 
-        friendsAdapter = new FriendsAdapter(this);
+        usersAdapter = new UsersAdapter(this, R.drawable.ic_remove_circle);
 
         friendsRecyclerView = (RecyclerView) findViewById(R.id.rv_friend_list);
         friendsRecyclerView.setLayoutManager(layoutManager);
-        friendsRecyclerView.setAdapter(friendsAdapter);
+        friendsRecyclerView.setAdapter(usersAdapter);
 
         addFriendButton = (FloatingActionButton) findViewById(R.id.btn_add_friend);
         addFriendButton.setOnClickListener(new View.OnClickListener() {
@@ -93,7 +93,7 @@ public class FriendsActivity extends AppCompatActivity implements
                 User friend = (User) viewHolder.itemView.getTag();
                 Log.d(TAG, "swipe friend: " + friend.toString());
                 foodVoterFirebaseDb.unfriendUser(friend);
-                friendsAdapter.removeFriend(friend);
+                usersAdapter.remove(friend);
 
             }
         }).attachToRecyclerView(friendsRecyclerView);
@@ -101,13 +101,13 @@ public class FriendsActivity extends AppCompatActivity implements
 
     @Override
     public void onFriendAdded(User friend) {
-        Log.d(TAG, "onFriendAdded() - " + friend.toString());
-        friendsAdapter.addFriend(friend);
+        usersAdapter.add(friend);
     }
 
     @Override
-    public void unfriend(User user) {
+    public void onUserClick(User user) {
         foodVoterFirebaseDb.unfriendUser(user);
+        usersAdapter.remove(user);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class FriendsActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         foodVoterFirebaseDb.detachReadListener();
-        friendsAdapter.clear();
+        usersAdapter.clear();
     }
 
     @Override
@@ -128,7 +128,6 @@ public class FriendsActivity extends AppCompatActivity implements
 
     @Override
     public void onUserChanged(User user) {
-        Log.d(TAG, "onUserChanged: " + user.toString());
-        friendsAdapter.updateFriend(user);
+        usersAdapter.updateOnlineStatus(user);
     }
 }

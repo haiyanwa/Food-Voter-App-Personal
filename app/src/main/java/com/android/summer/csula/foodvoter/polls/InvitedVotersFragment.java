@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.summer.csula.foodvoter.R;
-import com.android.summer.csula.foodvoter.adapters.FriendsInvitedAdapter;
+import com.android.summer.csula.foodvoter.adapters.FriendsVoterAdapter;
 import com.android.summer.csula.foodvoter.database.FoodVoterFirebaseDb;
 import com.android.summer.csula.foodvoter.models.User;
 import com.android.summer.csula.foodvoter.polls.models.Poll;
@@ -33,7 +33,7 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
 
     private User author;
     private FoodVoterFirebaseDb database;
-    private FriendsInvitedAdapter friendsAdapter;
+    private FriendsVoterAdapter friendsVoterAdapter;
     private List<User> voters = new ArrayList<>();
     private OnPollInvitesListener invitesListener;
 
@@ -95,10 +95,10 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
 
     private void initializeUI() {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(view.getContext());
-        friendsAdapter = new FriendsInvitedAdapter(invitesListener);
+        friendsVoterAdapter = new FriendsVoterAdapter(invitesListener);
         RecyclerView friendsRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_friends_list);
         friendsRecyclerView.setLayoutManager(layoutManager);
-        friendsRecyclerView.setAdapter(friendsAdapter);
+        friendsRecyclerView.setAdapter(friendsVoterAdapter);
     }
 
     private void initializeDatabase() {
@@ -119,13 +119,13 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
     public void onFriendAdded(User user) {
         Log.d(TAG, "friends added: " + user.toString());
 
-        friendsAdapter.addFriend(user);
+        friendsVoterAdapter.addFriend(user);
 
         // Check the voter list, passed to by the activity,  to see if the "user"
         // has already been invited. If so, update its visual through the adapter
         for (User voter: voters) {
             if (voter.equals(user)) {
-                friendsAdapter.updateInvitedUser(user);
+                friendsVoterAdapter.updateInvitedUser(user);
                 return;
             }
         }
@@ -138,8 +138,6 @@ public class InvitedVotersFragment extends Fragment implements FoodVoterFirebase
      */
     public interface OnPollInvitesListener {
 
-        void onUserInvited(User voter);
-
-        void onUserUninvited(User voter);
+        void onUserInvited(User voter, boolean invited);
     }
 }

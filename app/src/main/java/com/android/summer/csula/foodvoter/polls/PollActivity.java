@@ -265,12 +265,11 @@ public class PollActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onUserInvited(User voter) {
-        poll.addVoters(voter);
-    }
-
-    @Override
-    public void onUserUninvited(User voter) {
-        poll.removeVoters(voter);
+    public void onUserInvited(User voter, boolean invited) {
+        if (invited) {
+            poll.addVoters(voter);
+        } else {
+            poll.removeVoters(voter);
+        }
     }
 }
