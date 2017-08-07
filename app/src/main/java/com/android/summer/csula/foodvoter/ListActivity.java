@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.android.summer.csula.foodvoter.models.UserVote;
 import com.android.summer.csula.foodvoter.polls.models.Poll;
 import com.android.summer.csula.foodvoter.yelpApi.models.Business;
 import com.android.summer.csula.foodvoter.yelpApi.models.Coordinate;
@@ -23,9 +22,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses.POLLS;
 import static com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses.SELECTED_POLL_ID;
 
 public class ListActivity extends AppCompatActivity implements RVoteAdapter.ListItemClickListener, RVoteAdapter.SwitchListener {
@@ -37,6 +37,9 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
     public static final String ANONYMOUS = "anonymous";
     //private Button mSendVoteBtn;
     private final static String TAG = "ListActivity";
+
+    public static final String POLLS = "polls";
+    public static final String VOTES = "votes";
 
     private Business votedBusiness;
     private String mUsername = ANONYMOUS;
@@ -205,13 +208,31 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
         String message = "Send my vote for " + votedBusiness.getName();
         //mToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
         //mToast.show();
-        DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference();
+        //DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference().child("poll");
+        final DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference()
+                .child(POLLS)
+                .child(SELECTED_POLL_ID)
+                .child(VOTES);
+
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser user = firebaseAuth.getCurrentUser();
+        String userId = user.getUid();
+
         if(user != null){
+
+            final DatabaseReference voteRef = FirebaseDatabase.getInstance().getReference()
+                    .child(POLLS)
+                    .child(SELECTED_POLL_ID)
+                    .child(VOTES);
+
+            Map<String, Object> votes = new HashMap<String, Object>();
+
             String userid = user.getUid();
-            UserVote userVote = new UserVote(userid, votedBusiness);
-            dbReference.push().setValue(userVote);
+            votes.put(userid, votedBusiness.getId());
+            Log.d(TAG, "userid " + userid);
+            dbReference.setValue(votes);
+            mToast = Toast.makeText(this, "Sent vote!", Toast.LENGTH_LONG);
+            mToast.show();
         }else{
             mToast = Toast.makeText(this, "Cannot find user. Failed to vote...", Toast.LENGTH_LONG);
             mToast.show();
