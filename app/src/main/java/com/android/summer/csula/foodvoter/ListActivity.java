@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.android.summer.csula.foodvoter.demos.FirebasePollBusinesses.SELECTED_POLL_ID;
-
 public class ListActivity extends AppCompatActivity implements RVoteAdapter.ListItemClickListener, RVoteAdapter.SwitchListener {
 
     private static final String EXTRA_POLL = "poll";
@@ -148,10 +146,6 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
     public void sendVote(View v){
         String message = "Send my vote for " + votedBusiness.getName();
         String SELECTED_POLL_ID = getExtraPollId(getIntent());
-        final DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference()
-                .child(POLLS)
-                .child(SELECTED_POLL_ID)
-                .child(VOTES);
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser user = firebaseAuth.getCurrentUser();
@@ -169,9 +163,12 @@ public class ListActivity extends AppCompatActivity implements RVoteAdapter.List
             String userid = user.getUid();
             votes.put(userid, votedBusiness.getId());
             Log.d(TAG, "userid " + userid);
-            dbReference.setValue(votes);
-            mToast = Toast.makeText(this, "Sent vote!", Toast.LENGTH_LONG);
-            mToast.show();
+            voteRef.setValue(votes);
+            //mToast = Toast.makeText(this, "Sent vote!", Toast.LENGTH_LONG);
+            //mToast.show();
+            Intent intent = new Intent(this, PostVoteActivity.class);
+            intent.putExtra(EXTRA_POLL, poll.getPollId());
+            startActivity(intent);
         }else{
             mToast = Toast.makeText(this, "Cannot find user. Failed to vote...", Toast.LENGTH_LONG);
             mToast.show();

@@ -42,6 +42,12 @@
           android:name="android.support.PARENT_ACTIVITY"
           android:value=".ListActivity" />
     </activity>
+    <activity android:name=".PostVoteActivity"
+        android:parentActivityName=".ListActivity">
+      <meta-data
+          android:name="android.support.PARENT_ACTIVITY"
+          android:value=".ListActivity" />
+    </activity>
     <activity android:name=".TableResultActivity">
     </activity>
     <activity android:name=".GraphResultActivity">

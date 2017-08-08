@@ -99,7 +99,7 @@ public class RVoteAdapter extends RecyclerView.Adapter<RVoteAdapter.ViewHolder>{
 
     public void setBusinesses(List<Business> businesses) {
         mChoiceData = businesses;
-        notifyDataSetChanged();;
+        notifyDataSetChanged();
     }
 
     public void swapData(List<Business> businesses) {
